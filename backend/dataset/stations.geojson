@@ -1,0 +1,4042 @@
+{
+    "type": "FeatureCollection",
+    "name": "stations",
+    "crs": {
+        "type": "name",
+        "properties": {
+            "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+        }
+    },
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 322770856,
+                "internet_access": "no",
+                "name": "Naroda",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "NRD",
+                "train": "yes",
+                "wikidata": "Q63358132",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6580946,
+                    23.0854097
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 322983346,
+                "internet_access": "no",
+                "name": "Vastrapur",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "VTP",
+                "train": "yes",
+                "wikidata": "Q63357815",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5174367,
+                    23.0079064
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 323120091,
+                "internet_access": "no",
+                "name": "Maninagar",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "MAN",
+                "train": "yes",
+                "wikidata": "Q6749778",
+                "name:ja": null,
+                "wikipedia": "en:Maninagar railway station",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6114013,
+                    22.9986596
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 323189766,
+                "internet_access": "no",
+                "name": "Sabarmati",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "SBIB",
+                "train": "yes",
+                "wikidata": "Q7395913",
+                "name:ja": null,
+                "wikipedia": "en:Sabarmati Junction railway station",
+                "historic:ref": "SBI",
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5890677,
+                    23.0770712
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 566222693,
+                "internet_access": "no",
+                "name": "Asarva",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "ASV",
+                "train": "yes",
+                "wikidata": "Q24949933",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6132157,
+                    23.0440925
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 566223451,
+                "internet_access": "no",
+                "name": "Sardargram",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "SDGM",
+                "train": "yes",
+                "wikidata": "Q63357017",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6424393,
+                    23.0715012
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 713294758,
+                "internet_access": "no",
+                "name": "Viramgam Junction",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "VG",
+                "train": "yes",
+                "wikidata": "Q17100202",
+                "name:ja": null,
+                "wikipedia": "en:Viramgam railway station",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.053493,
+                    23.1276285
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 1349429257,
+                "internet_access": "no",
+                "name": "Kali Road",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "KLRD",
+                "train": null,
+                "wikidata": "Q63356483",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5780885,
+                    23.0980898
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 1517258904,
+                "internet_access": "no",
+                "name": "Koth Gangad",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "KTGD",
+                "train": "yes",
+                "wikidata": "Q63356563",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.3006679,
+                    22.6271131
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 1517908650,
+                "internet_access": "no",
+                "name": "Bavla",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "VLA",
+                "train": "yes",
+                "wikidata": "Q25549233",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.3647449,
+                    22.8335871
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 1545721824,
+                "internet_access": "no",
+                "name": "Sarkhej",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "SEJ",
+                "train": "yes",
+                "wikidata": "Q63357047",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.4975186,
+                    22.9821021
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 2068421652,
+                "internet_access": "no",
+                "name": "Katosan Road Junction",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "KTRD",
+                "train": "yes",
+                "wikidata": "Q63358058",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.243664,
+                    23.4061031
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 2068422100,
+                "internet_access": "no",
+                "name": "Bhoyani",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "BHAN",
+                "train": "yes",
+                "wikidata": "Q63357714",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.234314,
+                    23.3610646
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 2068743668,
+                "internet_access": "no",
+                "name": "Jhund Junction",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "JN",
+                "train": "yes",
+                "wikidata": "Q63355376",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    71.9341583,
+                    23.1607179
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 2376612715,
+                "internet_access": "no",
+                "name": "Ambli Road",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "ABD",
+                "train": "yes",
+                "wikidata": "Q63355331",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.4934085,
+                    23.0535306
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 2668715940,
+                "internet_access": "no",
+                "name": "Dholka",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "DOK",
+                "train": "yes",
+                "wikidata": "Q31293692",
+                "name:ja": "ドールカー",
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.4344198,
+                    22.7315548
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 2669084968,
+                "internet_access": "wlan",
+                "name": "Ahmedabad Junction",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "ADI",
+                "train": "yes",
+                "wikidata": "Q4696124",
+                "name:ja": null,
+                "wikipedia": "en:Ahmedabad Junction railway station",
+                "historic:ref": "ADIJ",
+                "addr:city": null,
+                "addr:postcode": "380001",
+                "addr:street": "Station Road",
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": "Kalupur Railway Station",
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.601,
+                    23.0263312
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 4398457021,
+                "internet_access": "no",
+                "name": "Vatva",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "VTA",
+                "train": "yes",
+                "wikidata": "Q24948676",
+                "name:ja": null,
+                "wikipedia": "en:Vatva railway station",
+                "historic:ref": null,
+                "addr:city": "Nr.Vatva GIDC",
+                "addr:postcode": null,
+                "addr:street": "Vatva phase -2 road",
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6297981,
+                    22.9589978
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 4486398588,
+                "internet_access": "no",
+                "name": "Sabarmati Junction",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "SBT",
+                "train": "yes",
+                "wikidata": "Q7395913",
+                "name:ja": null,
+                "wikipedia": "en:Sabarmati Junction railway station",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5870272,
+                    23.0712603
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 4515049690,
+                "internet_access": "no",
+                "name": "Barejadi Nandej",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "BJD",
+                "train": "yes",
+                "wikidata": "Q25549185",
+                "name:ja": null,
+                "wikipedia": "en:Barejadi Nandej railway station",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6771064,
+                    22.8953959
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 4525895498,
+                "internet_access": "no",
+                "name": "Geratpur",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "GER",
+                "train": "yes",
+                "wikidata": "Q28174005",
+                "name:ja": null,
+                "wikipedia": "en:Geratpur railway station",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6551837,
+                    22.9168572
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 5725638703,
+                "internet_access": "no",
+                "name": "Chandlodiya",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "CLDY",
+                "train": "yes",
+                "wikidata": "Q62005675",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5440359,
+                    23.0751633
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 5725639222,
+                "internet_access": "no",
+                "name": "Gora Ghuma",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "GGM",
+                "train": "yes",
+                "wikidata": "Q31295488",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.4517314,
+                    23.038673
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 5725639271,
+                "internet_access": "no",
+                "name": "Sanand",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "SAU",
+                "train": "yes",
+                "wikidata": "Q60569472",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.3851475,
+                    23.0238876
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 5725639283,
+                "internet_access": "no",
+                "name": "Chharodi",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "CE",
+                "train": "yes",
+                "wikidata": "Q31291926",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.2748933,
+                    23.0393458
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 5725639293,
+                "internet_access": "no",
+                "name": "Jakhvada",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "JKA",
+                "train": "yes",
+                "wikidata": "Q31297158",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.1553051,
+                    23.0843576
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 5725639432,
+                "internet_access": "no",
+                "name": "Vani Road",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "VNRD",
+                "train": "yes",
+                "wikidata": "Q63360874",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.0026027,
+                    23.0939093
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 5745061855,
+                "internet_access": "no",
+                "name": "Sabli Road",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "SR",
+                "train": "yes",
+                "wikidata": "Q63357613",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    71.9558158,
+                    23.0370241
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6571836455,
+                "internet_access": "no",
+                "name": "Detroj",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "DTJ",
+                "train": "yes",
+                "wikidata": "Q31293179",
+                "name:ja": null,
+                "wikipedia": "en:Detroj railway station",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.1844358,
+                    23.3400361
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6571849133,
+                "internet_access": null,
+                "name": "Ghelda",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "GLD",
+                "train": "yes",
+                "wikidata": "Q63356270",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.2092395,
+                    23.3675649
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6571849177,
+                "internet_access": "no",
+                "name": "Jaksi",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "JKS",
+                "train": "yes",
+                "wikidata": "Q31297154",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.0985192,
+                    23.1974863
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6571860282,
+                "internet_access": "no",
+                "name": "Bhankoda",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "BKD",
+                "train": "yes",
+                "wikidata": "Q25549312",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.128399,
+                    23.2704312
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6571867204,
+                "internet_access": "no",
+                "name": "Kanjh",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "KNU",
+                "train": "yes",
+                "wikidata": "Q63369181",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.154792,
+                    23.304982
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6727553050,
+                "internet_access": "no",
+                "name": "Vasan Iyava",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "WSE",
+                "train": "yes",
+                "wikidata": "Q63355328",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.3363409,
+                    23.0252667
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6727610645,
+                "internet_access": "no",
+                "name": "Sokali",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "XSK",
+                "train": "yes",
+                "wikidata": "Q63355319",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.1052332,
+                    23.0981869
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6728806680,
+                "internet_access": "no",
+                "name": "Khareshwar Road",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "KHRS",
+                "train": "yes",
+                "wikidata": "Q63357452",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    71.982919,
+                    23.0642682
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6738428335,
+                "internet_access": "no",
+                "name": "Chandlodiya 'B'",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "CLDB",
+                "train": "yes",
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5408184,
+                    23.0807984
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6758793148,
+                "internet_access": "no",
+                "name": "Sanathal",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "SNTL",
+                "train": "yes",
+                "wikidata": "Q104699511",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.4704112,
+                    22.9645191
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6759274176,
+                "internet_access": "no",
+                "name": "Moraiya",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "MORA",
+                "train": "yes",
+                "wikidata": "Q63355276",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.4407996,
+                    22.9306513
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6759428796,
+                "internet_access": "no",
+                "name": "Matoda",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "MQA",
+                "train": "yes",
+                "wikidata": "Q63357141",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.3995579,
+                    22.8838171
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6759458893,
+                "internet_access": "no",
+                "name": "Saljida",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "SJD",
+                "train": "yes",
+                "wikidata": "Q104699514",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.3977349,
+                    22.7847862
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6759461164,
+                "internet_access": "no",
+                "name": "Lothal Bhurkhi",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "LHBK",
+                "train": "yes",
+                "wikidata": "Q63356615",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.2240773,
+                    22.5537636
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6759527039,
+                "internet_access": "no",
+                "name": "Dhandhuka",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "DCK",
+                "train": "yes",
+                "wikidata": "Q31293408",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": "DDQ",
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": "Dhan Dhuka City",
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    71.9765847,
+                    22.3849802
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 6759527369,
+                "internet_access": "no",
+                "name": "Tagdi",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "TID",
+                "train": "yes",
+                "wikidata": "Q63357646",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    71.948129,
+                    22.2963499
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 7556326461,
+                "internet_access": null,
+                "name": "Chandkheda Road",
+                "network": "IR",
+                "operator": "WR",
+                "public_transport": null,
+                "railway": "station",
+                "ref": "CDK",
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": null,
+                "subway": null,
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5637712,
+                    23.1103339
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 7944287415,
+                "internet_access": null,
+                "name": "Kalupur Railway Station",
+                "network": null,
+                "operator": null,
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": "Q114400466",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "કાલુપુર રેલ્વે સ્ટેશન",
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6031447,
+                    23.0246913
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 7944287418,
+                "internet_access": null,
+                "name": "Kankaria East",
+                "network": null,
+                "operator": null,
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": "Q114400460",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": null,
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6070016,
+                    23.0154573
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 7944287421,
+                "internet_access": null,
+                "name": "Shahpur Station",
+                "network": null,
+                "operator": null,
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "શાહપુર",
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5810327,
+                    23.0392105
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 7944287424,
+                "internet_access": null,
+                "name": "Gheekanta",
+                "network": null,
+                "operator": null,
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "ઘીકાંટા",
+                "operator:wikidata": null,
+                "operator:wikipedia": null,
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5867752,
+                    23.028794
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 12196641348,
+                "internet_access": null,
+                "name": "Vishwakarma College",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "વિશ્વકર્મા કોલેજ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": "2024-09-17",
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6083864,
+                    23.1141999
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 12196641349,
+                "internet_access": null,
+                "name": "Koteshwar Road",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "કોટેશ્વર રોડ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": "2024-09-17",
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.6021329,
+                    23.1031114
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 12196641362,
+                "internet_access": null,
+                "name": "AEC",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": "Q114427225",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "એ ઇ સી",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.593291,
+                    23.0751088
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 12196641364,
+                "internet_access": null,
+                "name": "Sabarmati",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": "Q114427233",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "સાબરમતી",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": "yes",
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.592206,
+                    23.0856303
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 12196641366,
+                "internet_access": null,
+                "name": "Motera Stadium",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": "Q114427229",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "મોટેરા સ્ટેડિયમ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.596692,
+                    23.0967726
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 12406995811,
+                "internet_access": null,
+                "name": "Thaltej",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": "Q114400494",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "થલતેજ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": "Q1895288",
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5160152,
+                    23.049748
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "node",
+                "id": 12408894281,
+                "internet_access": null,
+                "name": "Thaltej Gam",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": "Q131418464",
+                "name:ja": null,
+                "wikipedia": null,
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "થલતેજ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": "Q1895288",
+                "historic:name": null,
+                "building": null,
+                "layer": null,
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    72.5070123,
+                    23.0502062
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1101028012,
+                "internet_access": null,
+                "name": "APMC",
+                "network": null,
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "એ પી એમ સી",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5375021,
+                            22.9972061
+                        ],
+                        [
+                            72.5373119,
+                            22.9971267
+                        ],
+                        [
+                            72.5367422,
+                            22.9982829
+                        ],
+                        [
+                            72.5369325,
+                            22.9983623
+                        ],
+                        [
+                            72.5375021,
+                            22.9972061
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1101058047,
+                "internet_access": null,
+                "name": "Ranip",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "રાણીપ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5733936,
+                            23.0677604
+                        ],
+                        [
+                            72.5747675,
+                            23.0677962
+                        ],
+                        [
+                            72.574774,
+                            23.0675877
+                        ],
+                        [
+                            72.5734,
+                            23.0675519
+                        ],
+                        [
+                            72.5733936,
+                            23.0677604
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1101058050,
+                "internet_access": null,
+                "name": "Shreyas",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "શ્રેયસ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5486276,
+                            23.0132703
+                        ],
+                        [
+                            72.5498979,
+                            23.0137404
+                        ],
+                        [
+                            72.5498173,
+                            23.013925
+                        ],
+                        [
+                            72.548547,
+                            23.0134549
+                        ],
+                        [
+                            72.5486276,
+                            23.0132703
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1101058051,
+                "internet_access": null,
+                "name": "Rajiv Nagar",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "રાજીવ નગર",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5360887,
+                            23.009561
+                        ],
+                        [
+                            72.5360665,
+                            23.0097512
+                        ],
+                        [
+                            72.5374159,
+                            23.0098848
+                        ],
+                        [
+                            72.5374381,
+                            23.0096947
+                        ],
+                        [
+                            72.5360887,
+                            23.009561
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1101058052,
+                "internet_access": null,
+                "name": "Jivraj Park",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "જીવરાજ પાર્ક",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.533691,
+                            23.0048853
+                        ],
+                        [
+                            72.5338829,
+                            23.004969
+                        ],
+                        [
+                            72.5332947,
+                            23.0061124
+                        ],
+                        [
+                            72.5331027,
+                            23.0060287
+                        ],
+                        [
+                            72.533691,
+                            23.0048853
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1107146505,
+                "internet_access": "no",
+                "name": "Gandhigram",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": "GG",
+                "train": "yes",
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": "Ahmedabad",
+                "addr:postcode": "380006",
+                "addr:street": null,
+                "name:gu": "ગાંધીગ્રામ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": "limited",
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": "yes",
+                "tourism": "information",
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5687769,
+                            23.0264671
+                        ],
+                        [
+                            72.5689736,
+                            23.026466
+                        ],
+                        [
+                            72.5689752,
+                            23.0267287
+                        ],
+                        [
+                            72.5691659,
+                            23.0267277
+                        ],
+                        [
+                            72.5691643,
+                            23.0264699
+                        ],
+                        [
+                            72.5692688,
+                            23.0264693
+                        ],
+                        [
+                            72.5692707,
+                            23.026784
+                        ],
+                        [
+                            72.5689756,
+                            23.0267855
+                        ],
+                        [
+                            72.5689762,
+                            23.0268916
+                        ],
+                        [
+                            72.5690608,
+                            23.0268912
+                        ],
+                        [
+                            72.5690632,
+                            23.0272911
+                        ],
+                        [
+                            72.5689786,
+                            23.0272915
+                        ],
+                        [
+                            72.5689924,
+                            23.027725
+                        ],
+                        [
+                            72.5687903,
+                            23.0277211
+                        ],
+                        [
+                            72.5687769,
+                            23.0264671
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134736,
+                "internet_access": null,
+                "name": "Stadium",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "સ્ટેડિયમ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5609867,
+                            23.0398033
+                        ],
+                        [
+                            72.5623495,
+                            23.0396952
+                        ],
+                        [
+                            72.5623668,
+                            23.0398794
+                        ],
+                        [
+                            72.561004,
+                            23.0399876
+                        ],
+                        [
+                            72.5609867,
+                            23.0398033
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134737,
+                "internet_access": null,
+                "name": "Commerce Sixth Road",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "કોમર્સ છ રસ્તા",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": "Q1895288",
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5523362,
+                            23.0409555
+                        ],
+                        [
+                            72.55246,
+                            23.0411316
+                        ],
+                        [
+                            72.5536098,
+                            23.040447
+                        ],
+                        [
+                            72.553486,
+                            23.040271
+                        ],
+                        [
+                            72.5523362,
+                            23.0409555
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134738,
+                "internet_access": null,
+                "name": "Gurukul Road",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "ગુરુકુલ રોડ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": "Q1895288",
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5341796,
+                            23.0459778
+                        ],
+                        [
+                            72.5355656,
+                            23.0459879
+                        ],
+                        [
+                            72.5355673,
+                            23.045788
+                        ],
+                        [
+                            72.5341813,
+                            23.0457779
+                        ],
+                        [
+                            72.5341796,
+                            23.0459778
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134739,
+                "internet_access": null,
+                "name": "Doordarshan Kendra",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "દૂરદર્શન કેન્દ્ર",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5237275,
+                            23.0482054
+                        ],
+                        [
+                            72.5237724,
+                            23.0484041
+                        ],
+                        [
+                            72.5251142,
+                            23.0481474
+                        ],
+                        [
+                            72.5250693,
+                            23.0479487
+                        ],
+                        [
+                            72.5237275,
+                            23.0482054
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134744,
+                "internet_access": null,
+                "name": "Vadaj",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "વાડજ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5650688,
+                            23.0677618
+                        ],
+                        [
+                            72.5664508,
+                            23.0677478
+                        ],
+                        [
+                            72.5664487,
+                            23.0675725
+                        ],
+                        [
+                            72.5650667,
+                            23.0675866
+                        ],
+                        [
+                            72.5650688,
+                            23.0677618
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134745,
+                "internet_access": null,
+                "name": "Vijay Nagar",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "વિજય નગર",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5620674,
+                            23.0567843
+                        ],
+                        [
+                            72.562298,
+                            23.0568324
+                        ],
+                        [
+                            72.5626105,
+                            23.0555997
+                        ],
+                        [
+                            72.5623946,
+                            23.0555503
+                        ],
+                        [
+                            72.5620674,
+                            23.0567843
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134747,
+                "internet_access": null,
+                "name": "Usmanpura",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "ઉસ્માનપુરા",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5647203,
+                            23.0464305
+                        ],
+                        [
+                            72.5649329,
+                            23.0464759
+                        ],
+                        [
+                            72.5652438,
+                            23.0452437
+                        ],
+                        [
+                            72.5650312,
+                            23.0451983
+                        ],
+                        [
+                            72.5647203,
+                            23.0464305
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134751,
+                "internet_access": null,
+                "name": "Gujarat University Station",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "ગુજરાત યુનિવર્સિટી સ્ટેશન",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": "Q1895288",
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5428768,
+                            23.0450736
+                        ],
+                        [
+                            72.5442267,
+                            23.0448257
+                        ],
+                        [
+                            72.5441825,
+                            23.0446218
+                        ],
+                        [
+                            72.5431678,
+                            23.0448081
+                        ],
+                        [
+                            72.5428326,
+                            23.0448697
+                        ],
+                        [
+                            72.5428768,
+                            23.0450736
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198134752,
+                "internet_access": null,
+                "name": "Old High Court",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "જૂની હાઇ કોર્ટ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5665397,
+                            23.0377036
+                        ],
+                        [
+                            72.5667411,
+                            23.0376749
+                        ],
+                        [
+                            72.5666808,
+                            23.0378896
+                        ],
+                        [
+                            72.5669543,
+                            23.037939
+                        ],
+                        [
+                            72.5670482,
+                            23.0376218
+                        ],
+                        [
+                            72.5678975,
+                            23.0375296
+                        ],
+                        [
+                            72.5678733,
+                            23.0373697
+                        ],
+                        [
+                            72.5670844,
+                            23.0374613
+                        ],
+                        [
+                            72.5672668,
+                            23.0367011
+                        ],
+                        [
+                            72.5669932,
+                            23.0366394
+                        ],
+                        [
+                            72.566776,
+                            23.0375058
+                        ],
+                        [
+                            72.5665155,
+                            23.0375437
+                        ],
+                        [
+                            72.5665397,
+                            23.0377036
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198140890,
+                "internet_access": "yes",
+                "name": "Vastral Gam",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "વસ્ત્રાલ ગામ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": "yes",
+                "ele": "2"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.6666921,
+                            22.9973124
+                        ],
+                        [
+                            72.6668198,
+                            22.9975487
+                        ],
+                        [
+                            72.6680899,
+                            22.9969669
+                        ],
+                        [
+                            72.6679622,
+                            22.9967306
+                        ],
+                        [
+                            72.6666921,
+                            22.9973124
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198140891,
+                "internet_access": "yes",
+                "name": "Nirant Cross Roads",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "નિરંત ક્રોસ રોડ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": "yes",
+                "ele": "2"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.6581964,
+                            22.9999293
+                        ],
+                        [
+                            72.6582929,
+                            23.0001021
+                        ],
+                        [
+                            72.6595817,
+                            22.9995207
+                        ],
+                        [
+                            72.6594745,
+                            22.9993318
+                        ],
+                        [
+                            72.6581964,
+                            22.9999293
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198140892,
+                "internet_access": "yes",
+                "name": "Vastral",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": "Ahmedabad",
+                "addr:postcode": null,
+                "addr:street": "Vastral",
+                "name:gu": "વસ્ત્રાલ",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": "yes",
+                "ele": "2"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.6468962,
+                            23.0036688
+                        ],
+                        [
+                            72.6469463,
+                            23.0038477
+                        ],
+                        [
+                            72.6482921,
+                            23.003529
+                        ],
+                        [
+                            72.6482421,
+                            23.00335
+                        ],
+                        [
+                            72.6468962,
+                            23.0036688
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198140893,
+                "internet_access": "yes",
+                "name": "Rabari Colony",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "રબારી કોલોની",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": "yes",
+                "ele": "2"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.6347177,
+                            23.0056156
+                        ],
+                        [
+                            72.636019,
+                            23.0051462
+                        ],
+                        [
+                            72.636095,
+                            23.0053248
+                        ],
+                        [
+                            72.6347937,
+                            23.0057943
+                        ],
+                        [
+                            72.6347177,
+                            23.0056156
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198140894,
+                "internet_access": "yes",
+                "name": "Amraiwadi",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "અમરીવાડી",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": "2019-05-18",
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": "yes",
+                "ele": "2"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.62805,
+                            23.007849
+                        ],
+                        [
+                            72.6281449,
+                            23.0080338
+                        ],
+                        [
+                            72.6294059,
+                            23.0074854
+                        ],
+                        [
+                            72.6293111,
+                            23.0073006
+                        ],
+                        [
+                            72.62805,
+                            23.007849
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198140895,
+                "internet_access": "yes",
+                "name": "Apparel Park",
+                "network": "Ahmedabad Metro",
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "એપરલ પાર્ક",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "1",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": "yes",
+                "ele": "2"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.6173005,
+                            23.0105209
+                        ],
+                        [
+                            72.6173024,
+                            23.0108258
+                        ],
+                        [
+                            72.6187192,
+                            23.0108183
+                        ],
+                        [
+                            72.6187173,
+                            23.0105134
+                        ],
+                        [
+                            72.6173005,
+                            23.0105209
+                        ]
+                    ]
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "element": "way",
+                "id": 1198140896,
+                "internet_access": null,
+                "name": "Paldi",
+                "network": null,
+                "operator": "Gujarat Metro Rail Corporation Limited",
+                "public_transport": "station",
+                "railway": "station",
+                "ref": null,
+                "train": null,
+                "wikidata": null,
+                "name:ja": null,
+                "wikipedia": "en:List of Ahmedabad Metro stations",
+                "historic:ref": null,
+                "addr:city": null,
+                "addr:postcode": null,
+                "addr:street": null,
+                "name:gu": "પાલડી",
+                "operator:wikidata": "Q113158873",
+                "operator:wikipedia": "en:Gujarat Metro Rail Corporation Limited",
+                "start_date": null,
+                "station": "subway",
+                "subway": "yes",
+                "alt_name": null,
+                "wheelchair": null,
+                "network:wikidata": null,
+                "historic:name": null,
+                "building": "train_station",
+                "layer": "3",
+                "information": null,
+                "tourism": null,
+                "air_conditioning": null,
+                "ele": null
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [
+                            72.5617307,
+                            23.0183563
+                        ],
+                        [
+                            72.5618022,
+                            23.0181912
+                        ],
+                        [
+                            72.5623831,
+                            23.0183702
+                        ],
+                        [
+                            72.5630846,
+                            23.0186584
+                        ],
+                        [
+                            72.5630189,
+                            23.0188194
+                        ],
+                        [
+                            72.5617307,
+                            23.0183563
+                        ]
+                    ]
+                ]
+            }
+        }
+    ]
+}
