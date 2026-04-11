@@ -5,6 +5,7 @@ from database import engine, Base
 import models.spatial   # import so SQLAlchemy registers the table classes
 
 from routers import transport
+from routers import zoning
 # from routers import demographics, poi, score  ← add as you build more layers
 
 # Auto-create any NEW tables defined in models/ that don't exist yet
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(transport.router)
+app.include_router(zoning.router)
 # app.include_router(demographics.router)   ← plug in as you build
 # app.include_router(poi.router)
 
