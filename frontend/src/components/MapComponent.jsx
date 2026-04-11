@@ -4,7 +4,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import SearchBox from './SearchBox';
 
-export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, scoreData, theme, lastClicked }) {
+export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, scoreData, theme, lastClicked }) {
   const mapRef = useRef(null);
 
   const [viewState, setViewState] = useState({
@@ -17,6 +17,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
   const [layerData, setLayerData] = useState({});
   const [hoverInfo, setHoverInfo] = useState(null);
   const [demoHover, setDemoHover] = useState(false);
+  const [zoningHover, setZoningHover] = useState(false);
 
   // Helper to create 1km circle
   const circleGeoJSON = React.useMemo(() => {
@@ -45,6 +46,34 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
       }]
     };
   }, [lastClicked, activeLayers.demographics]);
+
+  // Helper to create 500m circle for zoning
+  const zoningCircleGeoJSON = React.useMemo(() => {
+    if (!lastClicked || !activeLayers.landuse || !zoningDetail) return null;
+    const points = 64;
+    const coords = [];
+    const radiusKm = 0.5;
+    const kmPerLat = 111.32;
+    const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
+
+    for (let i = 0; i < points; i++) {
+      const angle = (i * 360) / points;
+      const dx = radiusKm * Math.cos(angle * Math.PI / 180);
+      const dy = radiusKm * Math.sin(angle * Math.PI / 180);
+      coords.push([
+        lastClicked.lng + (dx / kmPerLng),
+        lastClicked.lat + (dy / kmPerLat)
+      ]);
+    }
+    coords.push(coords[0]);
+    return {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [coords] }
+      }]
+    };
+  }, [lastClicked, activeLayers.landuse, zoningDetail]);
 
   const handleSearchSelect = useCallback((lat, lon) => {
     const map = mapRef.current?.getMap?.();
@@ -85,11 +114,15 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         mapLib={maplibregl}
         mapStyle={theme === 'light' ? "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"}
         ref={mapRef}
-        interactiveLayerIds={['layer_demographics', 'layer_landuse', 'layer_risk', 'demo_highlight_fill']}
+        interactiveLayerIds={['layer_demographics', 'layer_landuse', 'layer_risk', 'demo_highlight_fill', 'zoning_highlight_fill']}
         onMouseEnter={(e) => {
-          if (e.features && e.features[0].layer.id === 'demo_highlight_fill') setDemoHover(true);
+          if (e.features && e.features.length > 0) {
+            const lid = e.features[0].layer.id;
+            if (lid === 'demo_highlight_fill') setDemoHover(true);
+            if (lid === 'zoning_highlight_fill') setZoningHover(true);
+          }
         }}
-        onMouseLeave={() => setDemoHover(false)}
+        onMouseLeave={() => { setDemoHover(false); setZoningHover(false); }}
       >
         <NavigationControl position="bottom-right" />
 
@@ -137,6 +170,74 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 {demographicsDetail.people_grouping && Object.entries(demographicsDetail.people_grouping).map(([group, pct]) => (
                   <div className="demo-popup-row" key={group}>
                     <span className="demo-popup-label">{group.replace(/_/g, ' ')}:</span>
+                    <span className="demo-popup-value">{pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Popup>
+        )}
+        {/* ZONING HIGHLIGHT CIRCLE (500m) */}
+        {zoningCircleGeoJSON && (
+          <Source id="zoning_highlight_src" type="geojson" data={zoningCircleGeoJSON}>
+            <Layer
+              id="zoning_highlight_fill"
+              type="fill"
+              paint={{ 'fill-color': '#3fb950', 'fill-opacity': zoningHover ? 0.3 : 0.15 }}
+            />
+            <Layer
+              id="zoning_highlight_line"
+              type="line"
+              paint={{ 'line-color': '#3fb950', 'line-width': 2, 'line-dasharray': [2, 1] }}
+            />
+          </Source>
+        )}
+
+        {/* ZONING POPUP */}
+        {zoningDetail && lastClicked && (zoningHover || !scoreData) && (
+          <Popup
+            longitude={lastClicked.lng}
+            latitude={lastClicked.lat}
+            anchor={demographicsDetail ? "right" : "left"}
+            offset={15}
+            closeButton={false}
+            className="zoning-popup-map"
+          >
+            <div className="demo-popup-content">
+              <div className="zoning-popup-header">
+                <span>Land Use & Zoning</span>
+                <span className={`zoning-badge ${zoningDetail.allows_commercial ? 'zoning-badge--ok' : 'zoning-badge--no'}`}>
+                  {zoningDetail.allows_commercial ? '✅ Commercial' : '❌ No Commercial'}
+                </span>
+              </div>
+              <div className="demo-popup-body">
+                <div className="demo-popup-row">
+                  <span className="demo-popup-label">Zone Type:</span>
+                  <span className="demo-popup-value" style={{ textTransform: 'capitalize' }}>{zoningDetail.zone_type}</span>
+                </div>
+                <div className="demo-popup-row">
+                  <span className="demo-popup-label">Buildings (500m):</span>
+                  <span className="demo-popup-value">{zoningDetail.building_count_500m}</span>
+                </div>
+                <div className="demo-popup-row">
+                  <span className="demo-popup-label">Built-up Area:</span>
+                  <span className="demo-popup-value">{Math.round(zoningDetail.total_built_area_sqm).toLocaleString()} sqm</span>
+                </div>
+
+                <div className="zoning-divider"></div>
+                <div className="zoning-section-label">Building Distribution</div>
+                {zoningDetail.building_distribution_500m && Object.entries(zoningDetail.building_distribution_500m).map(([type, info]) => (
+                  <div className="demo-popup-row" key={type}>
+                    <span className="demo-popup-label" style={{ textTransform: 'capitalize' }}>{type}:</span>
+                    <span className="demo-popup-value">{info.count} ({info.percentage}%)</span>
+                  </div>
+                ))}
+
+                <div className="zoning-divider"></div>
+                <div className="zoning-section-label">Zone Distribution</div>
+                {zoningDetail.zone_distribution_500m_pct && Object.entries(zoningDetail.zone_distribution_500m_pct).map(([zone, pct]) => (
+                  <div className="demo-popup-row" key={zone}>
+                    <span className="demo-popup-label" style={{ textTransform: 'capitalize' }}>{zone}:</span>
                     <span className="demo-popup-value">{pct}%</span>
                   </div>
                 ))}

@@ -26,6 +26,7 @@ function App() {
 
   const [mapInfrastructure, setMapInfrastructure] = useState(null);
   const [demographicsDetail, setDemographicsDetail] = useState(null);
+  const [zoningDetail, setZoningDetail] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/api/score/presets')
@@ -68,6 +69,7 @@ function App() {
 
     setLastClicked(lngLat);
     setDemographicsDetail(null);
+    setZoningDetail(null);
 
     let newScoreData = {
       lat: lngLat.lat,
@@ -146,11 +148,29 @@ function App() {
       );
     }
 
+    // Zoning / Land Use Layer
+    if (activeLayers.landuse) {
+      fetchPromises.push(
+        fetch('http://localhost:8000/api/zoning/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setZoningDetail(data);
+            newScoreData.breakdown.landuse = data.zoning_score;
+          })
+          .catch(e => console.error('Zoning Scoring error', e))
+      );
+    }
+
     if (fetchPromises.length > 0) {
       await Promise.all(fetchPromises);
 
-      // If ONLY demographics is active, we don't open the ScorePanel
-      if (activeLayers.demographics && !activeLayers.transportation) {
+      // If ONLY map-centric layers are active, don't open the ScorePanel
+      const mapCentricOnly = (activeLayers.demographics || activeLayers.landuse) && !activeLayers.transportation;
+      if (mapCentricOnly) {
         setScoreData(null);
       } else {
         if (newScoreData.score > 0) {
@@ -252,6 +272,7 @@ function App() {
           catchmentData={catchmentData}
           mapInfrastructure={mapInfrastructure}
           demographicsDetail={demographicsDetail}
+          zoningDetail={zoningDetail}
           scoreData={scoreData}
           theme={theme}
           lastClicked={lastClicked}
