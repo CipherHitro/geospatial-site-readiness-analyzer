@@ -72,21 +72,57 @@ def get_zoning_score(lat: float, lng: float, db: Session) -> dict:
         )
         SELECT 
             z.zone_type,
-            SUM(ST_Area(ST_Intersection(z.geometry, b.geom)::geography)) as overlap_area_sqm
+            ST_Area(ST_Intersection(z.geometry, b.geom)::geography) as overlap_area_sqm,
+            ST_AsGeoJSON(ST_Intersection(z.geometry, b.geom)) as geojson
         FROM zones z, buffer b
         WHERE ST_Intersects(z.geometry, b.geom)
-        GROUP BY z.zone_type;
     """
     zone_dist_df = pd.read_sql(zone_dist_query, engine)
     
     total_intersect_area = zone_dist_df["overlap_area_sqm"].sum() if not zone_dist_df.empty else 0
     zone_distribution_500m = {}
+    zones_geojson = {"type": "FeatureCollection", "features": []}
+
+    import json
     if total_intersect_area > 0:
-        for _, row in zone_dist_df.iterrows():
-            z_type = row["zone_type"]
-            pct = (row["overlap_area_sqm"] / total_intersect_area) * 100
+        # Calculate percentages securely grouped by type
+        grouped = zone_dist_df.groupby("zone_type")["overlap_area_sqm"].sum()
+        for z_type, area in grouped.items():
+            pct = (area / total_intersect_area) * 100
             if pct > 0.1:  # keep visually relevant values
                 zone_distribution_500m[z_type] = round(pct, 1)
+        
+        # Build geojson
+        for _, row in zone_dist_df.iterrows():
+            if pd.notna(row["geojson"]) and row["geojson"]:
+                zones_geojson["features"].append({
+                    "type": "Feature",
+                    "geometry": json.loads(row["geojson"]),
+                    "properties": {"type": row["zone_type"]}
+                })
+                
+    # ── QUERY 4: Surrounding Buildings Geometries (500m) ────────────────
+    buildings_features_query = f"""
+        SELECT 
+            building_type, 
+            ST_AsGeoJSON(geometry) as geojson
+        FROM buildings
+        WHERE ST_DWithin(
+            geometry::geography,
+            ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326)::geography,
+            500
+        );
+    """
+    buildings_features_df = pd.read_sql(buildings_features_query, engine)
+    buildings_geojson = {"type": "FeatureCollection", "features": []}
+    
+    for _, row in buildings_features_df.iterrows():
+        if pd.notna(row["geojson"]) and row["geojson"]:
+            buildings_geojson["features"].append({
+                "type": "Feature",
+                "geometry": json.loads(row["geojson"]),
+                "properties": {"type": row["building_type"]}
+            })
 
     # ── SCORING ──────────────────────────────────────────────────
 
@@ -126,5 +162,7 @@ def get_zoning_score(lat: float, lng: float, db: Session) -> dict:
         "breakdown": {
             "zone_score":     round(float(zone_score), 1),
             "building_score": round(float(building_score), 1),
-        }
+        },
+        "buildings_geojson": buildings_geojson,
+        "zones_geojson": zones_geojson
     }

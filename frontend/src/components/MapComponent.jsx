@@ -47,6 +47,20 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
     };
   }, [lastClicked, activeLayers.demographics]);
 
+  const BUILDING_COLORS = { 'commercial': '#3fb950', 'anchor': '#a371f7', 'residential': '#58a6ff', 'generic': '#8b949e' };
+  const ZONE_COLORS = { 'commercial': '#3fb950', 'residential': '#58a6ff', 'industrial': '#d29922', 'restricted': '#f85149' };
+
+  // Calculate coordinates 520m East of the clicked point to anchor the popup outside the circle
+  const zoningPopupCoords = React.useMemo(() => {
+    if (!lastClicked) return null;
+    const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
+    return {
+      lat: lastClicked.lat,
+      lng: lastClicked.lng + (0.52 / kmPerLng)
+    };
+  }, [lastClicked]);
+
+
   // Helper to create 500m circle for zoning
   const zoningCircleGeoJSON = React.useMemo(() => {
     if (!lastClicked || !activeLayers.landuse || !zoningDetail) return null;
@@ -196,10 +210,10 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         {/* ZONING POPUP */}
         {zoningDetail && lastClicked && (zoningHover || !scoreData) && (
           <Popup
-            longitude={lastClicked.lng}
-            latitude={lastClicked.lat}
-            anchor={demographicsDetail ? "right" : "left"}
-            offset={15}
+            longitude={zoningPopupCoords.lng}
+            latitude={zoningPopupCoords.lat}
+            anchor="left"
+            offset={10}
             closeButton={false}
             className="zoning-popup-map"
           >
@@ -228,7 +242,10 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 <div className="zoning-section-label">Building Distribution</div>
                 {zoningDetail.building_distribution_500m && Object.entries(zoningDetail.building_distribution_500m).map(([type, info]) => (
                   <div className="demo-popup-row" key={type}>
-                    <span className="demo-popup-label" style={{ textTransform: 'capitalize' }}>{type}:</span>
+                    <span className="demo-popup-label" style={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: BUILDING_COLORS[type.toLowerCase()] || '#8b949e' }}></span>
+                      {type}:
+                    </span>
                     <span className="demo-popup-value">{info.count} ({info.percentage}%)</span>
                   </div>
                 ))}
@@ -237,13 +254,86 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 <div className="zoning-section-label">Zone Distribution</div>
                 {zoningDetail.zone_distribution_500m_pct && Object.entries(zoningDetail.zone_distribution_500m_pct).map(([zone, pct]) => (
                   <div className="demo-popup-row" key={zone}>
-                    <span className="demo-popup-label" style={{ textTransform: 'capitalize' }}>{zone}:</span>
+                    <span className="demo-popup-label" style={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: ZONE_COLORS[zone.toLowerCase()] || '#8b949e' }}></span>
+                      {zone}:
+                    </span>
                     <span className="demo-popup-value">{pct}%</span>
                   </div>
                 ))}
               </div>
             </div>
           </Popup>
+        )}
+
+        {/* ZONED AREAS (Polygons) rendering */}
+        {activeLayers.landuse && zoningDetail && zoningDetail.zones_geojson && (
+          <Source id="zones_geojson_src" type="geojson" data={zoningDetail.zones_geojson}>
+            <Layer
+              id="zones_geojson_fill"
+              type="fill"
+              paint={{
+                'fill-color': [
+                  'match',
+                  ['get', 'type'],
+                  'commercial', '#3fb950',
+                  'residential', '#58a6ff',
+                  'industrial', '#d29922',
+                  'restricted', '#f85149',
+                  '#8b949e'
+                ],
+                'fill-opacity': 0.3
+              }}
+            />
+            <Layer
+              id="zones_geojson_line"
+              type="line"
+              paint={{
+                'line-color': [
+                  'match',
+                  ['get', 'type'],
+                  'commercial', '#3fb950',
+                  'residential', '#58a6ff',
+                  'industrial', '#d29922',
+                  'restricted', '#f85149',
+                  '#8b949e'
+                ],
+                'line-width': 1.5,
+                'line-opacity': 0.8
+              }}
+            />
+          </Source>
+        )}
+
+        {/* BUILDINGS rendering for Zoning Layer */}
+        {activeLayers.landuse && zoningDetail && zoningDetail.buildings_geojson && (
+          <Source id="buildings_geojson_src" type="geojson" data={zoningDetail.buildings_geojson}>
+            <Layer
+              id="buildings_geojson_fill"
+              type="fill"
+              paint={{
+                'fill-color': [
+                  'match',
+                  ['get', 'type'],
+                  'commercial', '#3fb950',
+                  'anchor', '#a371f7',
+                  'residential', '#58a6ff',
+                  'generic', '#8b949e',
+                  '#8b949e'
+                ],
+                'fill-opacity': 0.9
+              }}
+            />
+            <Layer
+              id="buildings_geojson_line"
+              type="line"
+              paint={{
+                'line-color': '#000',
+                'line-width': 0.5,
+                'line-opacity': 0.5
+              }}
+            />
+          </Source>
         )}
 
         {/* INFRASTRUCTURE rendering for Transport layer details */}

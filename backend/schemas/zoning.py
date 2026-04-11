@@ -20,3 +20,5 @@ class ZoningResponse(BaseModel):
     zone_distribution_500m_pct: Dict[str, float]
     building_distribution_500m: Dict[str, BuildingDistribution]
     breakdown:                  ZoningBreakdown
+    buildings_geojson:          Any = None
+    zones_geojson:              Any = None
