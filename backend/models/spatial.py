@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, Boolean
 from geoalchemy2 import Geometry   # pip install geoalchemy2
 from database import Base
 
@@ -29,3 +29,17 @@ class PopulationGrid(Base):
     id         = Column(Integer, primary_key=True)
     population = Column(Float)
     geometry   = Column(Geometry("GEOMETRY", srid=4326))
+
+class Zone(Base):
+    __tablename__ = "zones"
+    id                = Column(Integer, primary_key=True)
+    zone_type         = Column(String)
+    allows_commercial = Column(Boolean)
+    geometry          = Column(Geometry("GEOMETRY", srid=4326))
+
+class Building(Base):
+    __tablename__ = "buildings"
+    id            = Column(Integer, primary_key=True)
+    building_type = Column(String)
+    area_sqm      = Column(Float)
+    geometry      = Column(Geometry("GEOMETRY", srid=4326))
