@@ -7,6 +7,7 @@ import models.spatial   # import so SQLAlchemy registers the table classes
 from routers import transport
 from routers import zoning
 from routers import demographics, transport, isochrone
+from routers import h3 as h3_router
 
 # from routers import demographics, poi, score  ← add as you build more layers
 
@@ -28,6 +29,7 @@ app.include_router(zoning.router)
 # app.include_router(demographics.router)   ← plug in as you build
 app.include_router(demographics.router)
 app.include_router(isochrone.router)   # GET /api/catchment-direct
+app.include_router(h3_router.router)   # GET /api/h3/grid, POST /api/h3/cell
 # app.include_router(poi.router)
 
 @app.get("/health")

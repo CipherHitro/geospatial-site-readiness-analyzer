@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Any
 
 
 class DemographicsRequest(BaseModel):
@@ -8,7 +8,7 @@ class DemographicsRequest(BaseModel):
 
 
 class DemographicsBreakdown(BaseModel):
-    population_in_1km: float
+    h3_population: float
     containing_cell_population: float
 
 
@@ -64,3 +64,5 @@ class DemographicsResponse(BaseModel):
     relative_wealth_index: float
     people_grouping: PeopleGrouping
     income_breakdown: IncomeBreakdown
+    h3_cell: Optional[Any] = None
+
