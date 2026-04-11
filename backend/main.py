@@ -16,7 +16,7 @@ app = FastAPI(title="GeoSpatial Site Readiness API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # your React frontend
+    allow_origins=["*"],  # Allow all origins for local hackathon dev
     allow_methods=["*"],
     allow_headers=["*"],
 )

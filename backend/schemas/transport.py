@@ -15,8 +15,22 @@ class ScoreBreakdown(BaseModel):
 # One isochrone ring
 class Isochrone(BaseModel):
     minutes:    int
-    # population: int
     polygon:    Any   # GeoJSON geometry object
+
+class RoadDetails(BaseModel):
+    highway: str
+    length_m: float
+    geometry: Any # GeoJSON LineString
+
+class BusStopDetails(BaseModel):
+    name: str
+    dist_m: int
+    geometry: Any # GeoJSON Point
+
+class StationDetails(BaseModel):
+    name: str
+    dist_m: int
+    geometry: Any # GeoJSON Point
 
 # Full transport layer response
 class TransportResponse(BaseModel):
@@ -27,4 +41,6 @@ class TransportResponse(BaseModel):
     station_distance_m:   int
     total_road_length_m:  float
     breakdown:            ScoreBreakdown
-    isochrones:           list[Isochrone]
+    roads_nearby:         list[RoadDetails]
+    bus_stops_nearby:     list[BusStopDetails]
+    stations_nearby:      list[StationDetails]
