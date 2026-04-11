@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 import models.spatial   # import so SQLAlchemy registers the table classes
 
-from routers import demographics, transport
+from routers import demographics, transport, isochrone
 # from routers import demographics, poi, score  ← add as you build more layers
 
 # Auto-create any NEW tables defined in models/ that don't exist yet
@@ -22,6 +22,7 @@ app.add_middleware(
 
 app.include_router(transport.router)
 app.include_router(demographics.router)
+app.include_router(isochrone.router)   # GET /api/catchment-direct
 # app.include_router(poi.router)
 
 @app.get("/health")
