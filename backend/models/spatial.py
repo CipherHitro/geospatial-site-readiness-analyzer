@@ -22,3 +22,10 @@ class Road(Base):
     id       = Column(Integer, primary_key=True)
     name     = Column(String)
     geometry = Column(Geometry("LINESTRING", srid=4326))
+
+
+class PopulationGrid(Base):
+    __tablename__ = "population_grid"
+    id         = Column(Integer, primary_key=True)
+    population = Column(Float)
+    geometry   = Column(Geometry("GEOMETRY", srid=4326))

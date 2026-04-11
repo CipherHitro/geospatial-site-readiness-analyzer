@@ -249,6 +249,110 @@ html, body {
 .recs-list li { font-size: 12px; color: var(--text); line-height: 1.5; padding: var(--sp-2) var(--sp-3); background: var(--surface-2); border-left: 3px solid var(--warning); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
 .recs-list li.success { border-left-color: var(--success); }
 
+/* DEMOGRAPHICS PANEL SECTION */
+.demographics-details {
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-2);
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+.stat-box {
+  background: var(--surface-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+}
+.stat-box__val {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.stat-box__lbl {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.income-dist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.dist-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.dist-lbl {
+  width: 100px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+.dist-track {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.dist-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+}
+.dist-val {
+  width: 35px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+
+/* MAP-CENTRIC DEMOGRAPHIC POPUP */
+.demographic-popup-map .maplibregl-popup-content {
+  background: rgba(22, 27, 34, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 12px 16px;
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+}
+.demo-popup-header {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 8px;
+}
+.demo-popup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.demo-popup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.demo-popup-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.demo-popup-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
 /* ===== SEARCH BOX ===== */
 .search-box {
   position: absolute;

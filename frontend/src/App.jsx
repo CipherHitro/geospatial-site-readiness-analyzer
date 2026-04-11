@@ -15,16 +15,17 @@ function App() {
   const [weights, setWeights] = useState({
     demographics: 25, transportation: 20, competition: 20, landuse: 20, risk: 15
   });
-  
+
   const [lastClicked, setLastClicked] = useState(null);
   const [scoreData, setScoreData] = useState(null);
   const [hotspotsData, setHotspotsData] = useState(null);
   const [catchmentData, setCatchmentData] = useState(null);
-  
+
   const [savedSites, setSavedSites] = useState([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
 
   const [mapInfrastructure, setMapInfrastructure] = useState(null);
+  const [demographicsDetail, setDemographicsDetail] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/api/score/presets')
@@ -56,90 +57,108 @@ function App() {
     setIsCompareOpen(true);
   };
 
-  const toggleLayer = (layerId) => setActiveLayers(prev => ({...prev, [layerId]: !prev[layerId]}));
+  const toggleLayer = (layerId) => setActiveLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
 
   const handleMapClick = async (lngLat) => {
-    const total = Object.values(weights).reduce((a,b) => a + b, 0);
+    const total = Object.values(weights).reduce((a, b) => a + b, 0);
     if (total !== 100) {
       alert("Weights must sum exactly to 100% before scoring.");
       return;
     }
 
     setLastClicked(lngLat);
+    setDemographicsDetail(null);
 
+    let newScoreData = {
+      lat: lngLat.lat,
+      lng: lngLat.lng,
+      score: 0,
+      grade: 'C',
+      breakdown: {},
+      recommendations: [],
+      constraint_failures: []
+    };
+
+    const fetchPromises = [];
+
+    // Demographic Layer
+    if (activeLayers.demographics) {
+      const demoPromise = fetch('http://localhost:8000/api/demographics/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+      })
+        .then(res => res.json())
+        .then(async (data) => {
+          let neighborhood = "Unknown Area";
+          try {
+            const photonRes = await fetch(`https://photon.komoot.io/reverse?lon=${lngLat.lng}&lat=${lngLat.lat}`);
+            const photonData = await photonRes.json();
+            if (photonData.features && photonData.features.length > 0) {
+              const props = photonData.features[0].properties;
+              neighborhood = props.district || props.city || props.name || neighborhood;
+            }
+          } catch (e) { console.warn("Reverse geocode failed", e); }
+
+          setDemographicsDetail({
+            ...data,
+            neighborhood,
+            density: Math.round(data.population / 3.14159)
+          });
+
+          newScoreData.demographics = data;
+          newScoreData.breakdown.demographics = data.demographics_score;
+        })
+        .catch(e => console.error('Demographics Scoring error', e));
+
+      fetchPromises.push(demoPromise);
+    }
+
+    // Transportation Layer
     if (activeLayers.transportation) {
-      try {
-        const res = await fetch('http://localhost:8000/api/transport/score', {
+      fetchPromises.push(
+        fetch('http://localhost:8000/api/transport/score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lat: lngLat.lat,
-            lng: lngLat.lng
-          })
-        });
-        const data = await res.json();
-        
-        setScoreData({
-          lat: lngLat.lat,
-          lng: lngLat.lng,
-          score: Math.round(data.transport_score),
-          grade: data.transport_score > 80 ? 'A' : data.transport_score > 60 ? 'B' : 'C',
-          breakdown: {
-            "bus_score": data.breakdown.bus_score,
-            "station_score": data.breakdown.station_score,
-            "road_score": data.breakdown.road_score
-          },
-          recommendations: [
-            `Nearest bus stop: ${data.nearest_bus_stop} (${data.bus_stop_distance_m}m)`,
-            `Nearest station: ${data.nearest_station} (${data.station_distance_m}m)`,
-            `Total road length in 500m: ${Math.round(data.total_road_length_m)}m`
-          ],
-          constraint_failures: []
-        });
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+        })
+          .then(res => res.json())
+          .then(data => {
+            newScoreData.transport = data;
+            newScoreData.breakdown.bus_score = data.breakdown.bus_score;
+            newScoreData.breakdown.station_score = data.breakdown.station_score;
+            newScoreData.breakdown.road_score = data.breakdown.road_score;
+            newScoreData.recommendations.push(
+              `Nearest bus stop: ${data.nearest_bus_stop} (${data.bus_stop_distance_m}m)`,
+              `Nearest station: ${data.nearest_station} (${data.station_distance_m}m)`
+            );
+            newScoreData.score = Math.max(newScoreData.score, data.transport_score);
 
-        // Convert isochrones to catchment GEOJSON format for MapComponent
-        setCatchmentData(null) // Isochrones are removed from standard transport call
-
-        // Setup infrastructure data 
-        if (data.roads_nearby || data.bus_stops_nearby || data.stations_nearby) {
-            setMapInfrastructure({
+            if (data.roads_nearby || data.bus_stops_nearby || data.stations_nearby) {
+              setMapInfrastructure({
                 roads: data.roads_nearby || [],
                 busStops: data.bus_stops_nearby || [],
                 stations: data.stations_nearby || []
-            })
-        }
-
-      } catch (e) { console.error('Transport Scoring error', e); }
-    } else {
-      // Mock score logic for non-transport clicks (or call existing API)
-      try {
-        const res = await fetch('http://localhost:8000/api/score', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            lat: lngLat.lat,
-            lng: lngLat.lng,
-            weights: {
-              demographics: weights.demographics / 100,
-              transportation: weights.transportation / 100,
-              competition: weights.competition / 100,
-              landuse: weights.landuse / 100,
-              risk: weights.risk / 100
-            },
-            use_case: useCase
+              });
+            }
           })
-        });
-        const data = await res.json();
-        setScoreData({
-          lat: data.lat,
-          lng: data.lng,
-          score: Math.round(data.composite_score),
-          grade: data.grade,
-          breakdown: Object.keys(data.breakdown).reduce((acc, key) => { acc[key] = data.breakdown[key].score; return acc; }, {}),
-          recommendations: data.recommendations,
-          constraint_failures: data.constraint_failures
-        });
-      } catch (e) { console.error('Scoring error', e); }
+          .catch(e => console.error('Transport Scoring error', e))
+      );
+    }
+
+    if (fetchPromises.length > 0) {
+      await Promise.all(fetchPromises);
+
+      // If ONLY demographics is active, we don't open the ScorePanel
+      if (activeLayers.demographics && !activeLayers.transportation) {
+        setScoreData(null);
+      } else {
+        if (newScoreData.score > 0) {
+          newScoreData.grade = newScoreData.score > 80 ? 'A' : newScoreData.score > 60 ? 'B' : 'C';
+        }
+        setScoreData(newScoreData);
+      }
+      setCatchmentData(null);
     }
   };
 
@@ -148,7 +167,7 @@ function App() {
       const res = await fetch(`http://localhost:8000/api/hotspots?use_case=${useCase}`);
       const data = await res.json();
       setHotspotsData(data);
-    } catch(e) { console.error('Hotspots error', e); }
+    } catch (e) { console.error('Hotspots error', e); }
   };
 
   const handleCatchmentRun = async (mode, bands) => {
@@ -169,23 +188,23 @@ function App() {
       });
       const data = await res.json();
       setCatchmentData(data);
-    } catch(e) { console.error('Catchment error', e); }
+    } catch (e) { console.error('Catchment error', e); }
   };
 
   return (
     <>
-      <Header 
-         onCompareOpen={() => setIsCompareOpen(true)}
-         useCase={useCase}
-         onUseCaseChange={handleUseCaseChange}
-         theme={theme}
-         onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-         onHotspotsRun={handleHotspotsRun}
+      <Header
+        onCompareOpen={() => setIsCompareOpen(true)}
+        useCase={useCase}
+        onUseCaseChange={handleUseCaseChange}
+        theme={theme}
+        onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        onHotspotsRun={handleHotspotsRun}
       />
       <main className={`app-layout ${!isSidebarOpen ? 'sidebar-collapsed' : ''}`} id="app-layout">
-        <Sidebar 
-          activeLayers={activeLayers} 
+        <Sidebar
+          activeLayers={activeLayers}
           toggleLayer={toggleLayer}
           weights={weights}
           setWeights={setWeights}
@@ -195,12 +214,14 @@ function App() {
           hotspotsData={hotspotsData}
           catchmentData={catchmentData}
         />
-        <MapComponent 
-          activeLayers={activeLayers} 
+        <MapComponent
+          activeLayers={activeLayers}
           onMapClick={handleMapClick}
           hotspotsData={hotspotsData}
           catchmentData={catchmentData}
           mapInfrastructure={mapInfrastructure}
+          demographicsDetail={demographicsDetail}
+          scoreData={scoreData}
           theme={theme}
           lastClicked={lastClicked}
         />

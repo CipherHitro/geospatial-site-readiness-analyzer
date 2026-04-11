@@ -4,7 +4,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import SearchBox from './SearchBox';
 
-export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, theme, lastClicked }) {
+export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, scoreData, theme, lastClicked }) {
   const mapRef = useRef(null);
 
   const [viewState, setViewState] = useState({
@@ -16,6 +16,35 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
 
   const [layerData, setLayerData] = useState({});
   const [hoverInfo, setHoverInfo] = useState(null);
+  const [demoHover, setDemoHover] = useState(false);
+
+  // Helper to create 1km circle
+  const circleGeoJSON = React.useMemo(() => {
+    if (!lastClicked || !activeLayers.demographics) return null;
+    const points = 64;
+    const coords = [];
+    const radiusKm = 1;
+    const kmPerLat = 111.32;
+    const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
+
+    for (let i = 0; i < points; i++) {
+      const angle = (i * 360) / points;
+      const dx = radiusKm * Math.cos(angle * Math.PI / 180);
+      const dy = radiusKm * Math.sin(angle * Math.PI / 180);
+      coords.push([
+        lastClicked.lng + (dx / kmPerLng),
+        lastClicked.lat + (dy / kmPerLat)
+      ]);
+    }
+    coords.push(coords[0]);
+    return {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [coords] }
+      }]
+    };
+  }, [lastClicked, activeLayers.demographics]);
 
   const handleSearchSelect = useCallback((lat, lon) => {
     const map = mapRef.current?.getMap?.();
@@ -56,7 +85,11 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         mapLib={maplibregl}
         mapStyle={theme === 'light' ? "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"}
         ref={mapRef}
-        interactiveLayerIds={['layer_demographics', 'layer_landuse', 'layer_risk']}
+        interactiveLayerIds={['layer_demographics', 'layer_landuse', 'layer_risk', 'demo_highlight_fill']}
+        onMouseEnter={(e) => {
+          if (e.features && e.features[0].layer.id === 'demo_highlight_fill') setDemoHover(true);
+        }}
+        onMouseLeave={() => setDemoHover(false)}
       >
         <NavigationControl position="bottom-right" />
 
@@ -66,6 +99,50 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
             latitude={lastClicked.lat}
             color="#f85149"
             anchor="bottom" />
+        )}
+
+        {/* DEMOGRAPHIC HIGHLIGHT CIRCLE */}
+        {circleGeoJSON && (
+          <Source id="demo_highlight_src" type="geojson" data={circleGeoJSON}>
+            <Layer
+              id="demo_highlight_fill"
+              type="fill"
+              paint={{ 'fill-color': '#58a6ff', 'fill-opacity': demoHover ? 0.3 : 0.15 }}
+            />
+            <Layer
+              id="demo_highlight_line"
+              type="line"
+              paint={{ 'line-color': '#58a6ff', 'line-width': 2, 'line-dasharray': [2, 1] }}
+            />
+          </Source>
+        )}
+
+        {/* DEMOGRAPHIC POPUP */}
+        {demographicsDetail && (demoHover || !scoreData) && (
+          <Popup
+            longitude={lastClicked.lng}
+            latitude={lastClicked.lat}
+            anchor="left"
+            offset={15}
+            closeButton={false}
+            className="demographic-popup-map"
+          >
+            <div className="demo-popup-content">
+              <div className="demo-popup-header">{demographicsDetail.neighborhood}</div>
+              <div className="demo-popup-body">
+                <div className="demo-popup-row">
+                  <span className="demo-popup-label">Population:</span>
+                  <span className="demo-popup-value">{demographicsDetail.population.toLocaleString()}</span>
+                </div>
+                {demographicsDetail.people_grouping && Object.entries(demographicsDetail.people_grouping).map(([group, pct]) => (
+                  <div className="demo-popup-row" key={group}>
+                    <span className="demo-popup-label">{group.replace(/_/g, ' ')}:</span>
+                    <span className="demo-popup-value">{pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Popup>
         )}
 
         {/* INFRASTRUCTURE rendering for Transport layer details */}
