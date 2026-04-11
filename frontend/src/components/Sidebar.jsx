@@ -8,13 +8,13 @@ const layersConfig = [
   { id: 'risk', name: 'Environmental Risk', sub: 'Flood · Industrial · Air Quality', color: '#f85149' }
 ];
 
-export default function Sidebar({ 
-  activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData 
+export default function Sidebar({
+  activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData
 }) {
   const [activeTab, setActiveTab] = useState('layers');
   const [catchMode, setCatchMode] = useState('drive');
   const [catchBands, setCatchBands] = useState([10, 20]);
-  
+
   const weightTotal = Object.values(weights).reduce((a, b) => a + b, 0);
 
   const handleWeightChange = (key, val) => {
@@ -68,20 +68,20 @@ export default function Sidebar({
 
           <div className="legend-box">
             <div className="legend-title">POI Categories</div>
-            <div className="legend-row"><span className="legend-dot" style={{background:'#f85149'}}></span>Competitor</div>
-            <div className="legend-row"><span className="legend-dot" style={{background:'#58a6ff'}}></span>Anchor Tenant</div>
-            <div className="legend-row"><span className="legend-dot" style={{background:'#3fb950'}}></span>Complementary</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#f85149' }}></span>Competitor</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#58a6ff' }}></span>Anchor Tenant</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#3fb950' }}></span>Complementary</div>
           </div>
-          
-          <div className="legend-box" style={{marginTop: '12px'}}>
+
+          <div className="legend-box" style={{ marginTop: '12px' }}>
             <div className="legend-title">Transport Infrastructure</div>
-            <div className="legend-row"><i className="fa-solid fa-bus" style={{color:'#58a6ff', width: '16px', marginRight: '6px', textAlign: 'center'}}></i>Bus Stop</div>
-            <div className="legend-row"><i className="fa-solid fa-train" style={{color:'#ab7df8', width: '16px', marginRight: '6px', textAlign: 'center'}}></i>Railway Station</div>
-            <div className="legend-row"><span className="legend-dot" style={{background:'#e63946', borderRadius: '2px', height: '4px'}}></span>Motorway / Trunk</div>
-            <div className="legend-row"><span className="legend-dot" style={{background:'#f4a261', borderRadius: '2px', height: '4px'}}></span>Primary Road</div>
-            <div className="legend-row"><span className="legend-dot" style={{background:'#e9c46a', borderRadius: '2px', height: '4px'}}></span>Secondary Road</div>
-            <div className="legend-row"><span className="legend-dot" style={{background:'#2a9d8f', borderRadius: '2px', height: '4px'}}></span>Tertiary Road</div>
-            <div className="legend-row"><span className="legend-dot" style={{background:'#8ab17d', borderRadius: '2px', height: '4px'}}></span>Residential Road</div>
+            <div className="legend-row"><i className="fa-solid fa-bus" style={{ color: '#58a6ff', width: '16px', marginRight: '6px', textAlign: 'center' }}></i>Bus Stop</div>
+            <div className="legend-row"><i className="fa-solid fa-train" style={{ color: '#ab7df8', width: '16px', marginRight: '6px', textAlign: 'center' }}></i>Station</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#e63946', borderRadius: '2px', height: '4px' }}></span>Motorway / Trunk</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#f4a261', borderRadius: '2px', height: '4px' }}></span>Primary Road</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#e9c46a', borderRadius: '2px', height: '4px' }}></span>Secondary Road</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#2a9d8f', borderRadius: '2px', height: '4px' }}></span>Tertiary Road</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#8ab17d', borderRadius: '2px', height: '4px' }}></span>Residential Road</div>
           </div>
         </div>
       </div>
@@ -95,13 +95,13 @@ export default function Sidebar({
             {Object.keys(weights).map(w => (
               <div key={w} className="slider-row">
                 <div className="slider-header">
-                  <span className="slider-label" style={{textTransform:'capitalize'}}>
-                     {w === 'demographics' && <i className="fa-solid fa-people-group"></i>}
-                     {w === 'transportation' && <i className="fa-solid fa-road"></i>}
-                     {w === 'competition' && <i className="fa-solid fa-store"></i>}
-                     {w === 'landuse' && <i className="fa-solid fa-map"></i>}
-                     {w === 'risk' && <i className="fa-solid fa-triangle-exclamation"></i>}
-                     {w}
+                  <span className="slider-label" style={{ textTransform: 'capitalize' }}>
+                    {w === 'demographics' && <i className="fa-solid fa-people-group"></i>}
+                    {w === 'transportation' && <i className="fa-solid fa-road"></i>}
+                    {w === 'competition' && <i className="fa-solid fa-store"></i>}
+                    {w === 'landuse' && <i className="fa-solid fa-map"></i>}
+                    {w === 'risk' && <i className="fa-solid fa-triangle-exclamation"></i>}
+                    {w}
                   </span>
                   <span className="slider-val">{weights[w]}%</span>
                 </div>
@@ -109,14 +109,14 @@ export default function Sidebar({
               </div>
             ))}
           </div>
-          
+
           <div className="weight-total-row">
             <span>Total</span>
             <span className="weight-total-val" style={{ color: weightTotal === 100 ? 'var(--success)' : 'var(--danger)' }}>
               {weightTotal}%
             </span>
           </div>
-          <button className="action-btn" onClick={onRescore} style={{marginTop: 12, width: '100%'}}>
+          <button className="action-btn" onClick={onRescore} style={{ marginTop: 12, width: '100%' }}>
             <i className="fa-solid fa-rotate"></i> Re-Score Last Point
           </button>
         </div>
@@ -132,11 +132,11 @@ export default function Sidebar({
             <label className="form-label">Travel Mode</label>
             <div className="radio-group">
               <label className="radio-opt">
-                <input type="radio" value="drive" checked={catchMode==='drive'} onChange={()=>setCatchMode('drive')}/>
+                <input type="radio" value="drive" checked={catchMode === 'drive'} onChange={() => setCatchMode('drive')} />
                 <span><i className="fa-solid fa-car"></i> Drive</span>
               </label>
               <label className="radio-opt">
-                <input type="radio" value="walk" checked={catchMode==='walk'} onChange={()=>setCatchMode('walk')}/>
+                <input type="radio" value="walk" checked={catchMode === 'walk'} onChange={() => setCatchMode('walk')} />
                 <span><i className="fa-solid fa-person-walking"></i> Walk</span>
               </label>
             </div>
@@ -146,16 +146,16 @@ export default function Sidebar({
             <label className="form-label">Time Bands (minutes)</label>
             <div className="checkbox-group">
               <label className="check-opt">
-                <input type="checkbox" checked={catchBands.includes(10)} onChange={()=>toggleBand(10)} />
-                <span className="check-badge" style={{background:'#4ade80'}}>10 min</span>
+                <input type="checkbox" checked={catchBands.includes(10)} onChange={() => toggleBand(10)} />
+                <span className="check-badge" style={{ background: '#4ade80' }}>10 min</span>
               </label>
               <label className="check-opt">
-                <input type="checkbox" checked={catchBands.includes(20)} onChange={()=>toggleBand(20)} />
-                <span className="check-badge" style={{background:'#fbbf24'}}>20 min</span>
+                <input type="checkbox" checked={catchBands.includes(20)} onChange={() => toggleBand(20)} />
+                <span className="check-badge" style={{ background: '#fbbf24' }}>20 min</span>
               </label>
               <label className="check-opt">
-                <input type="checkbox" checked={catchBands.includes(30)} onChange={()=>toggleBand(30)} />
-                <span className="check-badge" style={{background:'#f87171'}}>30 min</span>
+                <input type="checkbox" checked={catchBands.includes(30)} onChange={() => toggleBand(30)} />
+                <span className="check-badge" style={{ background: '#f87171' }}>30 min</span>
               </label>
             </div>
           </div>
@@ -170,8 +170,8 @@ export default function Sidebar({
               <div id="catchment-bands">
                 {Object.entries(catchmentData.catchment).map(([mins, pop]) => (
                   <div key={mins} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', background: 'var(--surface)', borderRadius: 6, marginBottom: 4 }}>
-                    <span style={{color: '#8b949e', fontSize: 13}}>{mins} Min</span>
-                    <span style={{color: '#58a6ff', fontSize: 13, fontWeight: 600}}>{Number(pop).toLocaleString()}</span>
+                    <span style={{ color: '#8b949e', fontSize: 13 }}>{mins} Min</span>
+                    <span style={{ color: '#58a6ff', fontSize: 13, fontWeight: 600 }}>{Number(pop).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -188,7 +188,7 @@ export default function Sidebar({
           <button className="action-btn" onClick={onHotspotsRun}>
             <i className="fa-solid fa-fire"></i> Run Hotspot Analysis
           </button>
-          
+
           {hotspotsData && hotspotsData.summary && (
             <div className="hotspot-stats" style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <div className="stat-card" style={{ flex: 1, padding: 12, background: 'var(--surface)', borderRadius: 8, textAlign: 'center' }}>
