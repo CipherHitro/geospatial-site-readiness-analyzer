@@ -44,3 +44,4 @@ class TransportResponse(BaseModel):
     roads_nearby:         list[RoadDetails]
     bus_stops_nearby:     list[BusStopDetails]
     stations_nearby:      list[StationDetails]
+    isochrones:           list[Isochrone] = []

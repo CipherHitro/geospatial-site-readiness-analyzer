@@ -1,11 +1,9 @@
-import pandas as pd
+import json
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 def get_transport_score(lat: float, lng: float, db: Session) -> dict:
-    engine = db.get_bind()
-
-    bus_query = f"""
+    bus_query = text(f"""
         SELECT name,
         ST_Distance(
             geometry::geography,
@@ -14,10 +12,10 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
         FROM bus_stops
         WHERE geometry IS NOT NULL
         ORDER BY dist_m ASC LIMIT 1;
-    """
-    bus = pd.read_sql(bus_query, engine).iloc[0]
+    """)
+    bus = db.execute(bus_query).mappings().first()
 
-    station_query = f"""
+    station_query = text(f"""
         SELECT name,
         ST_Distance(
             geometry::geography,
@@ -26,10 +24,10 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
         FROM stations
         WHERE geometry IS NOT NULL
         ORDER BY dist_m ASC LIMIT 1;
-    """
-    station = pd.read_sql(station_query, engine).iloc[0]
+    """)
+    station = db.execute(station_query).mappings().first()
 
-    road_query = f"""
+    road_query = text(f"""
         SELECT COALESCE(SUM(
             ST_Length(ST_Intersection(
                 ST_Transform(geometry, 32643),
@@ -41,11 +39,12 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
             geometry::geography,
             ST_SetSRID(ST_MakePoint({lng},{lat}),4326)::geography, 500
         );
-    """
-    road_length = float(pd.read_sql(road_query, engine).iloc[0]['total_road_length_m'])
+    """)
+    road_row = db.execute(road_query).mappings().first()
+    road_length = float(road_row['total_road_length_m']) if road_row and road_row['total_road_length_m'] is not None else 0.0
 
     # Fetch geometry details to display on map for nearby infrastructure
-    bus_stops_query = f"""
+    bus_stops_query = text(f"""
         SELECT name,
         ST_Distance(
             geometry::geography,
@@ -58,18 +57,18 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
             ST_SetSRID(ST_MakePoint({lng},{lat}),4326)::geography, 1000
         )
         ORDER BY dist_m ASC LIMIT 10;
-    """
-    import json
-    bus_stops_df = pd.read_sql(bus_stops_query, engine)
+    """)
     bus_stops_nearby = []
-    for _, row in bus_stops_df.iterrows():
+    for row in db.execute(bus_stops_query).mappings():
+        val_name = row.get("name")
+        val_geojson = row.get("geojson")
         bus_stops_nearby.append({
-            "name": str(row["name"]) if pd.notna(row["name"]) and row["name"] else "Unnamed Bus Stop",
+            "name": str(val_name) if val_name is not None and val_name else "Unnamed Bus Stop",
             "dist_m": int(row["dist_m"]),
-            "geometry": json.loads(row["geojson"]) if pd.notna(row["geojson"]) and row["geojson"] else None
+            "geometry": json.loads(val_geojson) if val_geojson is not None and val_geojson else None
         })
 
-    stations_query = f"""
+    stations_query = text(f"""
         SELECT name,
         ST_Distance(
             geometry::geography,
@@ -82,44 +81,53 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
             ST_SetSRID(ST_MakePoint({lng},{lat}),4326)::geography, 3000
         )
         ORDER BY dist_m ASC LIMIT 10;
-    """
-    stations_df = pd.read_sql(stations_query, engine)
+    """)
     stations_nearby = []
-    for _, row in stations_df.iterrows():
+    for row in db.execute(stations_query).mappings():
+        val_name = row.get("name")
+        val_geojson = row.get("geojson")
         stations_nearby.append({
-            "name": str(row["name"]) if pd.notna(row["name"]) and row["name"] else "Unnamed Station",
+            "name": str(val_name) if val_name is not None and val_name else "Unnamed Station",
             "dist_m": int(row["dist_m"]),
-            "geometry": json.loads(row["geojson"]) if pd.notna(row["geojson"]) and row["geojson"] else None
+            "geometry": json.loads(val_geojson) if val_geojson is not None and val_geojson else None
         })
 
-    roads_nearby_query = f"""
+    roads_nearby_query = text(f"""
         SELECT highway, length AS length_m, ST_AsGeoJSON(geometry) as geojson
         FROM roads
         WHERE ST_DWithin(
             geometry::geography,
             ST_SetSRID(ST_MakePoint({lng},{lat}),4326)::geography, 500
         );
-    """
-    roads_df = pd.read_sql(roads_nearby_query, engine)
+    """)
     roads_nearby = []
-    for _, row in roads_df.iterrows():
+    for row in db.execute(roads_nearby_query).mappings():
+        val_hw = row.get("highway")
+        val_len = row.get("length_m")
+        val_geojson = row.get("geojson")
         roads_nearby.append({
-            "highway": str(row["highway"]) if pd.notna(row["highway"]) and row["highway"] else "unknown",
-            "length_m": float(row["length_m"] if pd.notna(row["length_m"]) else 0.0),
-            "geometry": json.loads(row["geojson"]) if pd.notna(row["geojson"]) and row["geojson"] else None
+            "highway": str(val_hw) if val_hw is not None and val_hw else "unknown",
+            "length_m": float(val_len) if val_len is not None else 0.0,
+            "geometry": json.loads(val_geojson) if val_geojson is not None and val_geojson else None
         })
 
-    bus_score     = max(0, 100 - (bus["dist_m"] / 1000 * 100))
-    station_score = max(0, 100 - (station["dist_m"] / 3000 * 100))
+    bus_name = bus.get("name") if bus else None
+    bus_dist = float(bus.get("dist_m")) if bus and bus.get("dist_m") is not None else 10000.0
+
+    station_name = station.get("name") if station else None
+    station_dist = float(station.get("dist_m")) if station and station.get("dist_m") is not None else 10000.0
+
+    bus_score     = max(0, 100 - (bus_dist / 1000 * 100))
+    station_score = max(0, 100 - (station_dist / 3000 * 100))
     road_score    = min(100, (road_length / 5000) * 100)
     final_score   = (bus_score * 0.35) + (station_score * 0.40) + (road_score * 0.25)
 
     return {
         "transport_score":     round(float(final_score), 1),
-        "nearest_bus_stop":    str(bus["name"]) if pd.notna(bus["name"]) and bus["name"] else "Unnamed Bus Stop",
-        "bus_stop_distance_m": int(round(bus["dist_m"])),
-        "nearest_station":     str(station["name"]) if pd.notna(station["name"]) and station["name"] else "Unnamed Station",
-        "station_distance_m":  int(round(station["dist_m"])),
+        "nearest_bus_stop":    str(bus_name) if bus_name else "Unnamed Bus Stop",
+        "bus_stop_distance_m": int(round(bus_dist)),
+        "nearest_station":     str(station_name) if station_name else "Unnamed Station",
+        "station_distance_m":  int(round(station_dist)),
         "total_road_length_m": round(road_length),
         "breakdown": {
             "bus_score":     round(float(bus_score), 1),

@@ -326,22 +326,25 @@ def get_income_score(lat: float, lng: float) -> dict:
 def get_demographics_score(lat: float, lng: float, db: Session) -> dict:
     query = text(
         """
+        WITH point AS (
+            SELECT ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS pt
+        )
         SELECT
             COALESCE(SUM(population) FILTER (
                 WHERE ST_DWithin(
                     geometry::geography,
-                    ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+                    pt::geography,
                     1000
                 )
             ), 0) AS population_in_1km,
             COALESCE(SUM(population) FILTER (
                 WHERE ST_Intersects(
                     geometry,
-                    ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)
+                    pt
                 )
             ), 0) AS containing_cell_population
-        FROM population_grid
-        WHERE geometry IS NOT NULL;
+        FROM population_grid, point
+        WHERE geometry && ST_Expand(pt, 0.015);
         """
     )
 
