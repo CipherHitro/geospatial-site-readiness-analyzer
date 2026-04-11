@@ -39,6 +39,15 @@ function App() {
     document.documentElement.className = theme;
   }, [theme]);
 
+  const isInitialMount = React.useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else if (lastClicked) {
+      handleMapClick(lastClicked);
+    }
+  }, [activeLayers]);
+
   const handleUseCaseChange = (uc) => {
     setUseCase(uc);
     if (presets[uc]) {
@@ -70,6 +79,7 @@ function App() {
     setLastClicked(lngLat);
     setDemographicsDetail(null);
     setZoningDetail(null);
+    setMapInfrastructure(null);
 
     let newScoreData = {
       lat: lngLat.lat,

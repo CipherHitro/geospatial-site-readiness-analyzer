@@ -60,6 +60,16 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
     };
   }, [lastClicked]);
 
+  // Calculate coordinates 1020m West of the clicked point for Demographics
+  const demoPopupCoords = React.useMemo(() => {
+    if (!lastClicked) return null;
+    const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
+    return {
+      lat: lastClicked.lat,
+      lng: lastClicked.lng - (1.02 / kmPerLng)
+    };
+  }, [lastClicked]);
+
 
   // Helper to create 500m circle for zoning
   const zoningCircleGeoJSON = React.useMemo(() => {
@@ -164,13 +174,13 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
-        {/* DEMOGRAPHIC POPUP */}
-        {demographicsDetail && (demoHover || !scoreData) && (
+        {/* DEMOGRAPHICS POPUP */}
+        {demographicsDetail && lastClicked && (demoHover || !scoreData) && (
           <Popup
-            longitude={lastClicked.lng}
-            latitude={lastClicked.lat}
-            anchor="left"
-            offset={15}
+            longitude={demoPopupCoords.lng}
+            latitude={demoPopupCoords.lat}
+            anchor="right"
+            offset={10}
             closeButton={false}
             className="demographic-popup-map"
           >
