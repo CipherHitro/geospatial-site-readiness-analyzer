@@ -6,7 +6,7 @@ import models.spatial   # import so SQLAlchemy registers the table classes
 
 from routers import transport
 from routers import zoning
-from routers import demographics, transport, isochrone
+from routers import demographics, transport, isochrone, poi
 
 # from routers import demographics, poi, score  ← add as you build more layers
 
@@ -28,7 +28,7 @@ app.include_router(zoning.router)
 # app.include_router(demographics.router)   ← plug in as you build
 app.include_router(demographics.router)
 app.include_router(isochrone.router)   # GET /api/catchment-direct
-# app.include_router(poi.router)
+app.include_router(poi.router)         # POST /api/poi/score
 
 @app.get("/health")
 def health():

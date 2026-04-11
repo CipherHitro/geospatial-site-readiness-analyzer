@@ -105,6 +105,31 @@ export default function ScorePanel({ scoreData, onClose, onCompareAdd }) {
               </div>
             </div>
           )}
+
+          {scoreData.poi && (
+            <div className="demographics-details" style={{ marginTop: '16px' }}>
+              <h4 className="breakdown-title">
+                <i className="fa-solid fa-map-location-dot"></i> POI Intelligence: {scoreData.poi.label}
+              </h4>
+              <p style={{ fontSize: '12px', color: '#8b949e', marginBottom: '12px', lineHeight: '1.4' }}>
+                {scoreData.poi.summary}
+              </p>
+              <div className="stats-grid">
+                <div className="stat-box">
+                  <span className="stat-box__val" style={{ color: '#58a6ff' }}>{scoreData.poi.counts.anchors}</span>
+                  <span className="stat-box__lbl">Anchors</span>
+                </div>
+                <div className="stat-box">
+                  <span className="stat-box__val" style={{ color: '#3fb950' }}>{scoreData.poi.counts.complementary}</span>
+                  <span className="stat-box__lbl">Complementary</span>
+                </div>
+                <div className="stat-box">
+                  <span className="stat-box__val" style={{ color: '#f85149' }}>{scoreData.poi.counts.competitors}</span>
+                  <span className="stat-box__lbl">Competitors</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

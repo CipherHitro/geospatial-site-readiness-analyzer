@@ -4,7 +4,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import SearchBox from './SearchBox';
 
-export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, scoreData, theme, lastClicked }) {
+export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, poiDetail, scoreData, theme, lastClicked }) {
   const mapRef = useRef(null);
 
   const [viewState, setViewState] = useState({
@@ -59,6 +59,34 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
       lng: lastClicked.lng + (0.52 / kmPerLng)
     };
   }, [lastClicked]);
+
+  // Helper to create 500m circle for POI
+  const poiCircleGeoJSON = React.useMemo(() => {
+    if (!lastClicked || !activeLayers.poi || !poiDetail) return null;
+    const points = 64;
+    const coords = [];
+    const radiusKm = 0.5; // 500 meters
+    const kmPerLat = 111.32;
+    const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
+
+    for (let i = 0; i < points; i++) {
+      const angle = (i * 360) / points;
+      const dx = radiusKm * Math.cos(angle * Math.PI / 180);
+      const dy = radiusKm * Math.sin(angle * Math.PI / 180);
+      coords.push([
+        lastClicked.lng + (dx / kmPerLng),
+        lastClicked.lat + (dy / kmPerLat)
+      ]);
+    }
+    coords.push(coords[0]);
+    return {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [coords] }
+      }]
+    };
+  }, [lastClicked, activeLayers.poi, poiDetail]);
 
   // Calculate coordinates 1020m West of the clicked point for Demographics
   const demoPopupCoords = React.useMemo(() => {
@@ -138,15 +166,35 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         mapLib={maplibregl}
         mapStyle={theme === 'light' ? "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"}
         ref={mapRef}
-        interactiveLayerIds={['layer_demographics', 'layer_landuse', 'layer_risk', 'demo_highlight_fill', 'zoning_highlight_fill']}
+        interactiveLayerIds={['layer_demographics', 'layer_landuse', 'layer_risk', 'demo_highlight_fill', 'zoning_highlight_fill', 'layer_poi', 'layer_dynamic_poi']}
         onMouseEnter={(e) => {
           if (e.features && e.features.length > 0) {
-            const lid = e.features[0].layer.id;
+            const feature = e.features[0];
+            const lid = feature.layer.id;
             if (lid === 'demo_highlight_fill') setDemoHover(true);
             if (lid === 'zoning_highlight_fill') setZoningHover(true);
+            if (lid === 'layer_poi' || lid === 'layer_dynamic_poi') {
+              const props = feature.properties;
+              setHoverInfo({
+                id: `poi-${props.name}`,
+                type: props.poi_type || props.category || 'POI',
+                name: props.name,
+                dist: props.distance_m || 0,
+                lng: e.lngLat.lng,
+                lat: e.lngLat.lat,
+                color: props.color || (props.poi_type === 'anchor' ? '#58a6ff' : props.poi_type === 'competitor' ? '#f85149' : props.poi_type === 'complementary' ? '#3fb950' : '#e3883e')
+              });
+            }
           }
         }}
-        onMouseLeave={() => { setDemoHover(false); setZoningHover(false); }}
+        onMouseLeave={(e) => {
+          setDemoHover(false);
+          setZoningHover(false);
+          // Only clear POI hover if we are actually leaving the point (and not hovering over bus/train)
+          if (hoverInfo && hoverInfo.id && hoverInfo.id.startsWith('poi-')) {
+            setHoverInfo(null);
+          }
+        }}
       >
         <NavigationControl position="bottom-right" />
 
@@ -315,6 +363,44 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
+        {/* POI HIGHLIGHT CIRCLE (500m) AND POINTS */}
+        {poiCircleGeoJSON && (
+          <Source id="poi_circle_src" type="geojson" data={poiCircleGeoJSON}>
+            <Layer
+              id="poi_circle_fill"
+              type="fill"
+              paint={{ 'fill-color': '#e3883e', 'fill-opacity': 0.1 }}
+            />
+            <Layer
+              id="poi_circle_line"
+              type="line"
+              paint={{ 'line-color': '#e3883e', 'line-width': 1.5, 'line-dasharray': [2, 2] }}
+            />
+          </Source>
+        )}
+
+        {activeLayers.poi && poiDetail && poiDetail.features && (
+          <Source id="poi_detail_points_src" type="geojson" data={{ type: 'FeatureCollection', features: poiDetail.features }}>
+            <Layer
+              id="poi_detail_points"
+              type="circle"
+              paint={{
+                'circle-color': [
+                  'match',
+                  ['get', 'poi_type'],
+                  'competitor', '#f85149',
+                  'anchor', '#58a6ff',
+                  'complementary', '#3fb950',
+                  '#e3883e'
+                ],
+                'circle-radius': 6,
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#ffffff'
+              }}
+            />
+          </Source>
+        )}
+
         {/* BUILDINGS rendering for Zoning Layer */}
         {activeLayers.landuse && zoningDetail && zoningDetail.buildings_geojson && (
           <Source id="buildings_geojson_src" type="geojson" data={zoningDetail.buildings_geojson}>
@@ -455,10 +541,12 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
               <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '6px', lineHeight: '1.3' }}>
                 {hoverInfo.name}
               </div>
-              <div style={{ fontSize: '12px', color: '#8b949e', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <i className="fa-solid fa-person-walking"></i>
-                <span>{Math.round(hoverInfo.dist)} m away</span>
-              </div>
+              {hoverInfo.dist > 0 && (
+                <div style={{ fontSize: '12px', color: '#8b949e', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <i className="fa-solid fa-person-walking"></i>
+                  <span>{Math.round(hoverInfo.dist)} m away</span>
+                </div>
+              )}
             </div>
           </Popup>
         )}
@@ -511,7 +599,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
-        {activeLayers.poi && layerData.poi && (
+        {activeLayers.poi && layerData.poi && !poiDetail && (
           <Source id="src_poi" type="geojson" data={layerData.poi}>
             <Layer id="layer_poi" type="circle" paint={{
               'circle-color': [
@@ -523,6 +611,18 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 '#e3883e'
               ],
               'circle-radius': 4
+            }} />
+          </Source>
+        )}
+
+        {/* DYNAMIC POI LAYER (Use-case specific) */}
+        {activeLayers.poi && poiDetail && poiDetail.features && (
+          <Source id="src_dynamic_poi" type="geojson" data={{ type: "FeatureCollection", features: poiDetail.features }}>
+            <Layer id="layer_dynamic_poi" type="circle" paint={{
+              'circle-color': ['get', 'color'],
+              'circle-radius': 5,
+              'circle-stroke-width': 1,
+              'circle-stroke-color': '#000000'
             }} />
           </Source>
         )}

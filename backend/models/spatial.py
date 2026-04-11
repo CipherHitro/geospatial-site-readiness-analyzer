@@ -43,3 +43,12 @@ class Building(Base):
     building_type = Column(String)
     area_sqm      = Column(Float)
     geometry      = Column(Geometry("GEOMETRY", srid=4326))
+
+
+class PoiLocation(Base):
+    __tablename__ = "poi_locations"
+    id            = Column(Integer, primary_key=True)
+    name          = Column(String)
+    category      = Column(String)
+    poi_type      = Column(String)
+    geometry      = Column(Geometry("POINT", srid=4326))

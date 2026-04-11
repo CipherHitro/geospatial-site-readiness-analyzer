@@ -27,6 +27,7 @@ function App() {
   const [mapInfrastructure, setMapInfrastructure] = useState(null);
   const [demographicsDetail, setDemographicsDetail] = useState(null);
   const [zoningDetail, setZoningDetail] = useState(null);
+  const [poiDetail, setPoiDetail] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/api/score/presets')
@@ -47,6 +48,16 @@ function App() {
       handleMapClick(lastClicked);
     }
   }, [activeLayers]);
+
+  // Re-fetch POI data when the use case changes
+  const isFirstUseCase = React.useRef(true);
+  useEffect(() => {
+    if (isFirstUseCase.current) {
+      isFirstUseCase.current = false;
+    } else if (lastClicked && activeLayers.poi) {
+      handleMapClick(lastClicked);
+    }
+  }, [useCase]);
 
   const handleUseCaseChange = (uc) => {
     setUseCase(uc);
@@ -80,6 +91,7 @@ function App() {
     setDemographicsDetail(null);
     setZoningDetail(null);
     setMapInfrastructure(null);
+    setPoiDetail(null);
 
     let newScoreData = {
       lat: lngLat.lat,
@@ -172,6 +184,23 @@ function App() {
             newScoreData.breakdown.landuse = data.zoning_score;
           })
           .catch(e => console.error('Zoning Scoring error', e))
+      );
+    }
+
+    // POI / Competition Layer
+    if (activeLayers.poi) {
+      fetchPromises.push(
+        fetch('http://localhost:8000/api/poi/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, radius: 500, use_case: useCase })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setPoiDetail(data);
+            newScoreData.breakdown.competition = data.score;
+          })
+          .catch(e => console.error('POI Scoring error', e))
       );
     }
 
@@ -283,9 +312,11 @@ function App() {
           mapInfrastructure={mapInfrastructure}
           demographicsDetail={demographicsDetail}
           zoningDetail={zoningDetail}
+          poiDetail={poiDetail}
           scoreData={scoreData}
           theme={theme}
           lastClicked={lastClicked}
+          useCase={useCase}
         />
       </main>
       <ScorePanel scoreData={scoreData} onClose={() => setScoreData(null)} onCompareAdd={handleCompareAdd} />
