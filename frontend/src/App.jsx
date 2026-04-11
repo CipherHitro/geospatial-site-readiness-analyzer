@@ -170,24 +170,55 @@ function App() {
     } catch (e) { console.error('Hotspots error', e); }
   };
 
+  const CATCHMENT_COLORS = { 10: '#4ade80', 20: '#fbbf24', 30: '#f87171' };
+
   const handleCatchmentRun = async (mode, bands) => {
     if (!lastClicked) {
       alert("Please click a location on the map first!");
       return;
     }
+
+    // Sort bands descending so larger areas render behind smaller ones
+    const sortedBands = [...bands].sort((a, b) => b - a);
+
     try {
-      const res = await fetch('http://localhost:8000/api/isochrone', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          lat: lastClicked.lat,
-          lng: lastClicked.lng,
-          time_minutes: bands.map(Number),
-          mode: mode
+      const results = await Promise.all(
+        sortedBands.map(async (mins) => {
+          const res = await fetch('http://localhost:8000/api/catchment-direct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              lat: lastClicked.lat,
+              lon: lastClicked.lng,
+              time_mins: mins,
+              mode: mode
+            })
+          });
+          const data = await res.json();
+          return { mins, ...data };
         })
-      });
-      const data = await res.json();
-      setCatchmentData(data);
+      );
+
+      // Build a GeoJSON FeatureCollection for map rendering
+      const geojson = {
+        type: 'FeatureCollection',
+        features: results.map(r => ({
+          type: 'Feature',
+          geometry: r.isochrone_geojson,
+          properties: {
+            mins: r.mins,
+            fillColor: CATCHMENT_COLORS[r.mins] || '#a78bfa',
+            total_population: r.total_population,
+            point_count: r.point_count
+          }
+        }))
+      };
+
+      // Build catchment summary for sidebar display
+      const catchment = {};
+      results.forEach(r => { catchment[r.mins] = r.total_population; });
+
+      setCatchmentData({ geojson, catchment });
     } catch (e) { console.error('Catchment error', e); }
   };
 
