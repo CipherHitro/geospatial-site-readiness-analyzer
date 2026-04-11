@@ -64,9 +64,9 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
     bus_stops_nearby = []
     for _, row in bus_stops_df.iterrows():
         bus_stops_nearby.append({
-            "name": row["name"] or "Unnamed Bus Stop",
+            "name": str(row["name"]) if pd.notna(row["name"]) and row["name"] else "Unnamed Bus Stop",
             "dist_m": int(row["dist_m"]),
-            "geometry": json.loads(row["geojson"]) if row["geojson"] else None
+            "geometry": json.loads(row["geojson"]) if pd.notna(row["geojson"]) and row["geojson"] else None
         })
 
     stations_query = f"""
@@ -87,9 +87,9 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
     stations_nearby = []
     for _, row in stations_df.iterrows():
         stations_nearby.append({
-            "name": row["name"] or "Unnamed Station",
+            "name": str(row["name"]) if pd.notna(row["name"]) and row["name"] else "Unnamed Station",
             "dist_m": int(row["dist_m"]),
-            "geometry": json.loads(row["geojson"]) if row["geojson"] else None
+            "geometry": json.loads(row["geojson"]) if pd.notna(row["geojson"]) and row["geojson"] else None
         })
 
     roads_nearby_query = f"""
@@ -104,9 +104,9 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
     roads_nearby = []
     for _, row in roads_df.iterrows():
         roads_nearby.append({
-            "highway": row["highway"] or "unknown",
-            "length_m": float(row["length_m"] or 0.0),
-            "geometry": json.loads(row["geojson"]) if row["geojson"] else None
+            "highway": str(row["highway"]) if pd.notna(row["highway"]) and row["highway"] else "unknown",
+            "length_m": float(row["length_m"] if pd.notna(row["length_m"]) else 0.0),
+            "geometry": json.loads(row["geojson"]) if pd.notna(row["geojson"]) and row["geojson"] else None
         })
 
     bus_score     = max(0, 100 - (bus["dist_m"] / 1000 * 100))
@@ -116,9 +116,9 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
 
     return {
         "transport_score":     round(float(final_score), 1),
-        "nearest_bus_stop":    bus["name"] or "Unnamed Bus Stop",
+        "nearest_bus_stop":    str(bus["name"]) if pd.notna(bus["name"]) and bus["name"] else "Unnamed Bus Stop",
         "bus_stop_distance_m": int(round(bus["dist_m"])),
-        "nearest_station":     station["name"] or "Unnamed Station",
+        "nearest_station":     str(station["name"]) if pd.notna(station["name"]) and station["name"] else "Unnamed Station",
         "station_distance_m":  int(round(station["dist_m"])),
         "total_road_length_m": round(road_length),
         "breakdown": {
