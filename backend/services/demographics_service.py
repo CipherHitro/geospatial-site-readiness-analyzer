@@ -325,7 +325,49 @@ def get_income_score(lat: float, lng: float) -> dict:
     }
 
 
-def get_demographics_score(lat: float, lng: float, db: Session) -> dict:
+def calc_demographics_score(data: dict, use_case: str, weights: dict = None) -> dict:
+    population = data.get("population", 0)
+    rwi = data.get("relative_wealth_index", 0.0)
+    people_group = data.get("people_grouping", {})
+
+    pop_score = min(100.0, (population / 500.0) * 100.0)
+    wealth_score = min(100.0, rwi * 200.0)
+
+    middle = people_group.get("middle_class", 0)
+    upper_middle = people_group.get("upper_middle_class", 0)
+    upper = people_group.get("upper_class", 0)
+
+    if use_case == "retail":
+        income_score = middle + upper_middle + upper
+    elif use_case == "ev_charging":
+        income_score = upper_middle + upper
+    elif use_case == "warehouse":
+        income_score = pop_score * 0.3
+    elif use_case == "telecom":
+        income_score = pop_score
+    elif use_case == "energy":
+        income_score = pop_score * 0.5
+    else:
+        income_score = pop_score * 0.5
+
+    if not weights:
+        weights = {"pop": 0.4, "wealth": 0.3, "income": 0.3}
+
+    final_score = (
+        weights.get("pop", 0.4) * pop_score +
+        weights.get("wealth", 0.3) * wealth_score +
+        weights.get("income", 0.3) * income_score
+    )
+
+    return {
+        "final_score": final_score,
+        "pop_score": pop_score,
+        "wealth_score": wealth_score,
+        "income_score": income_score
+    }
+
+
+def get_demographics_score(lat: float, lng: float, db: Session, use_case: str = "retail", weights: dict = None) -> dict:
     query = text(
         """
         WITH point AS (
@@ -366,8 +408,15 @@ def get_demographics_score(lat: float, lng: float, db: Session) -> dict:
     population = h3_cell["population"] if h3_cell else containing_cell_population
     demographics_score = _score_population(population)
 
+    calc_data = {
+        "population": population,
+        "relative_wealth_index": income["relative_wealth_index"],
+        "people_grouping": income["people_grouping"]
+    }
+    custom_scores = calc_demographics_score(calc_data, use_case, weights)
+
     return {
-        "demographics_score": round(demographics_score, 1),
+        "demographics_score": round(custom_scores["final_score"], 1),
         "population": round(population, 2),
         "income_level_score": income["income_level_score"],
         "relative_wealth_index": income["relative_wealth_index"],
@@ -378,4 +427,7 @@ def get_demographics_score(lat: float, lng: float, db: Session) -> dict:
         },
         "income_breakdown": income["breakdown"],
         "h3_cell": h3_cell_for_demographics,
+        "pop_score": round(custom_scores["pop_score"], 1),
+        "wealth_score": round(custom_scores["wealth_score"], 1),
+        "income_score": round(custom_scores["income_score"], 1),
     }

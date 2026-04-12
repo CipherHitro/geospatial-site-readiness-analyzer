@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/demographics", tags=["Demographics"])
 def demographics_score(req: DemographicsRequest, db: Session = Depends(get_db)):
     """
     POST /api/demographics/score
-    Body: { "lat": 23.12, "lng": 72.54 }
-    Returns: demographic score + population breakdown
+    Body: { "lat": 23.12, "lng": 72.54, "use_case": "retail" }
+    Returns: demographic score + population breakdown + sub scores
     """
-    return get_demographics_score(req.lat, req.lng, db)
+    return get_demographics_score(req.lat, req.lng, db, req.use_case, req.weights)

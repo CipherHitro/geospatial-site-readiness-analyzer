@@ -1,137 +1,275 @@
 import React from 'react';
 
-export default function ScorePanel({ scoreData, onClose, onCompareAdd }) {
-  const isOpen = scoreData !== null;
+const SCORE_METRICS = [
+  { key: 'demographics', label: 'Demographics', icon: 'fa-users', color: '#58a6ff' },
+  { key: 'competition', label: 'Competition', icon: 'fa-store', color: '#a371f7' },
+  { key: 'landuse', label: 'Land Use', icon: 'fa-map', color: '#3fb950' },
+  { key: 'bus_score', label: 'Bus Access', icon: 'fa-bus', color: '#d29922' },
+  { key: 'station_score', label: 'Rail Access', icon: 'fa-train', color: '#e3883e' },
+  { key: 'road_score', label: 'Road Quality', icon: 'fa-road', color: '#58a6ff' },
+  { key: 'risk', label: 'Flood Risk', icon: 'fa-water', color: '#f85149' },
+];
+
+const INCOME_COLORS = {
+  upper_class: '#3fb950',
+  upper_middle_class: '#58a6ff',
+  middle_class: '#d29922',
+  lower_middle_class: '#e3883e',
+  lower_class: '#f85149',
+};
+
+function ScoreRing({ score }) {
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (circumference * Math.min(score, 100)) / 100;
+  const color = score >= 70 ? '#3fb950' : score >= 40 ? '#d29922' : '#f85149';
+  const grade = score >= 80 ? 'A' : score >= 65 ? 'B' : score >= 50 ? 'C' : 'D';
 
   return (
-    <div className={`score-panel ${isOpen ? 'open' : ''}`}>
-      <div className="score-panel__drag"></div>
-
-      <div className="score-panel__header">
-        <div className="score-panel__location">
-          <i className="fa-solid fa-location-pin"></i>
-          <span>{scoreData ? `${scoreData.lat.toFixed(4)}, ${scoreData.lng.toFixed(4)}` : 'Site Analysis'}</span>
-        </div>
-        <div className="score-panel__actions">
-          <button className="pill-btn" onClick={() => onCompareAdd(scoreData)}><i className="fa-solid fa-code-compare"></i> Compare</button>
-          <button className="icon-btn icon-btn--sm" onClick={onClose}><i className="fa-solid fa-xmark"></i></button>
-        </div>
+    <div className="sp-ring-wrap">
+      <svg className="sp-ring-svg" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--surface-3)" strokeWidth="10" />
+        <circle
+          cx="60" cy="60" r={radius} fill="none"
+          stroke={color} strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          transform="rotate(-90 60 60)"
+          style={{ transition: 'stroke-dashoffset 0.9s cubic-bezier(.4,0,.2,1)' }}
+        />
+      </svg>
+      <div className="sp-ring-inner">
+        <span className="sp-ring-score" style={{ color }}>{Math.round(score)}</span>
+        <span className="sp-ring-grade" style={{ color }}>{grade}</span>
       </div>
-
-      {scoreData && (
-        <div className="score-panel__body">
-          <div className="constraint-flags" style={{ display: (scoreData.constraint_failures?.length > 0) ? 'block' : 'none', marginBottom: 12 }}>
-            <span className="flag flag--fail" style={{ color: '#f85149', background: 'rgba(248,81,73,0.1)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', display: 'inline-block' }}>
-              <i className="fa-solid fa-triangle-exclamation"></i> {scoreData.constraint_failures?.[0]}
-            </span>
-          </div>
-
-          {/* Gauge area */}
-          <div className="gauge-zone">
-            <div className="gauge-wrap">
-              <svg className="gauge-svg" viewBox="0 0 200 120">
-                <defs>
-                  <linearGradient id="gGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#f85149" />
-                    <stop offset="50%" stopColor="#d29922" />
-                    <stop offset="100%" stopColor="#3fb950" />
-                  </linearGradient>
-                </defs>
-                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#21262d" strokeWidth="14" strokeLinecap="round" />
-                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gGrad)" strokeWidth="14" strokeLinecap="round" strokeDasharray="251.2" strokeDashoffset={`${251.2 - (251.2 * scoreData.score / 100)}`} />
-                <text x="18" y="116" fontSize="10" fill="#8b949e">0</text>
-                <text x="100" y="18" fontSize="10" fill="#8b949e" textAnchor="middle">50</text>
-                <text x="178" y="116" fontSize="10" fill="#8b949e" textAnchor="end">100</text>
-              </svg>
-              <div className="gauge-score">{scoreData.score}</div>
-              <div className="gauge-grade" style={{ background: 'rgba(63,185,80,0.1)', color: '#3fb950' }}>
-                Grade {scoreData.grade}
-              </div>
-            </div>
-          </div>
-
-          {/* Breakdown area */}
-          <div className="breakdown-section">
-            <h4 className="breakdown-title">Score Breakdown</h4>
-            <div className="breakdown-bars">
-              {Object.entries(scoreData.breakdown).map(([key, val]) => (
-                <div key={key}>
-                  <div className="breakdown-bar-header">
-                    <span className="breakdown-bar-label" style={{ textTransform: 'capitalize' }}>{key.replace('_', ' ')}</span>
-                    <span className="breakdown-bar-score">{Math.round(val)}</span>
-                  </div>
-                  <div className="breakdown-bar-track">
-                    <div className="breakdown-bar-fill" style={{ width: `${val}%`, background: val >= 70 ? '#3fb950' : (val >= 40 ? '#d29922' : '#f85149') }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {scoreData.recommendations && scoreData.recommendations.length > 0 && (
-            <div className={`recs-section ${scoreData.demographics ? 'with-details' : ''}`}>
-              <h4 className="recs-title"><i className="fa-solid fa-lightbulb"></i> AI Recommendations</h4>
-              <ul className="recs-list">
-                {scoreData.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
-              </ul>
-            </div>
-          )}
-
-          {scoreData.demographics && (
-            <div className="demographics-details">
-              <h4 className="breakdown-title">Market Demographics</h4>
-              <div className="stats-grid">
-                <div className="stat-box">
-                  <span className="stat-box__val">{scoreData.demographics.population.toLocaleString()}</span>
-                  <span className="stat-box__lbl">Population (1km)</span>
-                </div>
-                <div className="stat-box">
-                  <span className="stat-box__val">{scoreData.demographics.relative_wealth_index.toFixed(3)}</span>
-                  <span className="stat-box__lbl">Wealth Index</span>
-                </div>
-              </div>
-
-              <div className="income-dist">
-                <h5 className="breakdown-title" style={{ fontSize: '10px', marginBottom: '8px' }}>Income Breakdown</h5>
-                {Object.entries(scoreData.demographics.people_grouping).map(([group, val]) => (
-                  <div className="dist-row" key={group}>
-                    <span className="dist-lbl">{group.replace(/_/g, ' ')}</span>
-                    <div className="dist-track">
-                      <div className="dist-fill" style={{ width: `${val}%` }}></div>
-                    </div>
-                    <span className="dist-val">{val}%</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {scoreData.poi && (
-            <div className="demographics-details" style={{ marginTop: '16px' }}>
-              <h4 className="breakdown-title">
-                <i className="fa-solid fa-map-location-dot"></i> POI Intelligence: {scoreData.poi.label}
-              </h4>
-              <p style={{ fontSize: '12px', color: '#8b949e', marginBottom: '12px', lineHeight: '1.4' }}>
-                {scoreData.poi.summary}
-              </p>
-              <div className="stats-grid">
-                <div className="stat-box">
-                  <span className="stat-box__val" style={{ color: '#58a6ff' }}>{scoreData.poi.counts.anchors}</span>
-                  <span className="stat-box__lbl">Anchors</span>
-                </div>
-                <div className="stat-box">
-                  <span className="stat-box__val" style={{ color: '#3fb950' }}>{scoreData.poi.counts.complementary}</span>
-                  <span className="stat-box__lbl">Complementary</span>
-                </div>
-                <div className="stat-box">
-                  <span className="stat-box__val" style={{ color: '#f85149' }}>{scoreData.poi.counts.competitors}</span>
-                  <span className="stat-box__lbl">Competitors</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
+  );
+}
+
+function ProgressBar({ label, icon, value, color }) {
+  const pct = Math.min(Math.max(value || 0, 0), 100);
+  return (
+    <div className="sp-bar-row">
+      <div className="sp-bar-meta">
+        <span className="sp-bar-label"><i className={`fa-solid ${icon}`} style={{ color, marginRight: 6 }} />{label}</span>
+        <span className="sp-bar-val" style={{ color }}>{Math.round(pct)}</span>
+      </div>
+      <div className="sp-bar-track">
+        <div
+          className="sp-bar-fill"
+          style={{
+            width: `${pct}%`,
+            background: `linear-gradient(90deg, ${color}88, ${color})`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default function ScorePanel({ scoreData, demographicsDetail, isVisible = true, onClose, onToggle, onCompareAdd }) {
+  const hasData = scoreData !== null && scoreData !== undefined;
+  const isOpen = hasData && isVisible;
+  const demo = scoreData?.demographics || demographicsDetail;
+
+  return (
+    <>
+      {/* ── Floating toggle button ── */}
+      {hasData && (
+        <button
+          className="sp-toggle-btn"
+          onClick={onToggle}
+          title={isOpen ? 'Hide panel' : 'Show analysis panel'}
+          style={{ bottom: isOpen ? 'var(--panel-h)' : 0 }}
+        >
+          <i className={`fa-solid fa-chevron-${isOpen ? 'down' : 'up'}`} />
+          <span>{isOpen ? 'Hide Panel' : 'Show Results'}</span>
+        </button>
+      )}
+
+      <div className={`score-panel ${isOpen ? 'open' : ''}`}>
+        <div className="score-panel__drag" />
+
+        {/* ── Header ── */}
+        <div className="score-panel__header">
+          <div className="score-panel__location">
+            <i className="fa-solid fa-location-pin" />
+            <span>
+              {scoreData
+                ? `${Number(scoreData.lat).toFixed(4)}, ${Number(scoreData.lng).toFixed(4)}`
+                : 'Site Analysis'}
+            </span>
+            {scoreData?.constraint_failures?.length > 0 && (
+              <span style={{
+                marginLeft: 8, fontSize: 11, color: '#f85149',
+                background: 'rgba(248,81,73,0.1)', padding: '2px 8px',
+                borderRadius: 4, fontWeight: 600,
+              }}>
+                <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 4 }} />
+                {scoreData.constraint_failures[0]}
+              </span>
+            )}
+          </div>
+          <div className="score-panel__actions">
+            <button className="pill-btn" onClick={() => onCompareAdd && onCompareAdd(scoreData)}>
+              <i className="fa-solid fa-code-compare" /> Compare
+            </button>
+            <button className="icon-btn icon-btn--sm" onClick={onClose}>
+              <i className="fa-solid fa-xmark" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── Body ── */}
+        {scoreData && (
+          <div className="score-panel__body">
+
+            {/* ── LEFT: Overall Score Ring + Progress Bars ── */}
+            <div className="sp-left">
+              {/* Ring */}
+              <div className="sp-ring-section">
+                <ScoreRing score={scoreData.score || 0} />
+                <div className="sp-ring-lbl">Site Readiness Score</div>
+              </div>
+
+              {/* Progress bars for each active breakdown metric */}
+              <div className="sp-bars-section">
+                <div className="sp-section-title">Score Breakdown</div>
+                <div className="sp-bars-list">
+                  {SCORE_METRICS.map(({ key, label, icon, color }) => {
+                    const val = scoreData.breakdown?.[key];
+                    if (val === undefined || val === null) return null;
+                    return (
+                      <ProgressBar key={key} label={label} icon={icon} value={val} color={color} />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* ── RIGHT: Demographics Detail ── */}
+            <div className="sp-right">
+              {demo ? (
+                <>
+                  <div className="sp-section-title" style={{ marginBottom: 12 }}>
+                    <i className="fa-solid fa-users" style={{ marginRight: 6, color: '#58a6ff' }} />
+                    Market Demographics
+                  </div>
+
+                  {/* Score KPIs */}
+                  <div className="sp-kpi-grid">
+                    <div className="sp-kpi" style={{ borderColor: 'rgba(88,166,255,0.3)', background: 'rgba(88,166,255,0.05)' }}>
+                      <span className="sp-kpi-val" style={{ color: '#58a6ff' }}>
+                        {demo.demographics_score ?? '—'}
+                      </span>
+                      <span className="sp-kpi-lbl">Demo Score</span>
+                    </div>
+                    <div className="sp-kpi">
+                      <span className="sp-kpi-val">{demo.pop_score != null ? Math.round(demo.pop_score) : '—'}</span>
+                      <span className="sp-kpi-lbl">Pop Score</span>
+                    </div>
+                    <div className="sp-kpi">
+                      <span className="sp-kpi-val">{demo.wealth_score != null ? Math.round(demo.wealth_score) : '—'}</span>
+                      <span className="sp-kpi-lbl">Wealth Score</span>
+                    </div>
+                    <div className="sp-kpi">
+                      <span className="sp-kpi-val">{demo.income_score != null ? Math.round(demo.income_score) : '—'}</span>
+                      <span className="sp-kpi-lbl">Income Score</span>
+                    </div>
+                  </div>
+
+                  {/* Raw stats */}
+                  <div className="sp-stat-rows">
+                    <div className="sp-stat-row">
+                      <span className="sp-stat-lbl"><i className="fa-solid fa-people-group" /> Population (1km)</span>
+                      <span className="sp-stat-val">{demo.population != null ? Number(demo.population).toLocaleString() : '—'}</span>
+                    </div>
+                    <div className="sp-stat-row">
+                      <span className="sp-stat-lbl"><i className="fa-solid fa-coins" /> Wealth Index</span>
+                      <span className="sp-stat-val">
+                        {demo.relative_wealth_index != null ? Number(demo.relative_wealth_index).toFixed(3) : '—'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Income distribution */}
+                  {demo.people_grouping && (
+                    <div className="sp-income-dist">
+                      <div className="sp-section-title" style={{ marginBottom: 8, marginTop: 4 }}>Income Distribution</div>
+                      {Object.entries(demo.people_grouping).map(([group, pct]) => (
+                        <div className="sp-income-row" key={group}>
+                          <span className="sp-income-lbl">
+                            <span
+                              className="sp-income-dot"
+                              style={{ background: INCOME_COLORS[group] || '#8b949e' }}
+                            />
+                            {group.replace(/_/g, ' ')}
+                          </span>
+                          <div className="sp-income-track">
+                            <div
+                              className="sp-income-fill"
+                              style={{
+                                width: `${pct}%`,
+                                background: INCOME_COLORS[group] || '#8b949e',
+                              }}
+                            />
+                          </div>
+                          <span className="sp-income-val">{pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* POI summary if available */}
+                  {scoreData.poi && (
+                    <div className="sp-poi-summary">
+                      <div className="sp-section-title" style={{ marginTop: 12, marginBottom: 8 }}>
+                        <i className="fa-solid fa-map-location-dot" style={{ marginRight: 6, color: '#a371f7' }} />
+                        POI: {scoreData.poi.label}
+                      </div>
+                      <div className="sp-kpi-grid">
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(88,166,255,0.3)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#58a6ff' }}>{scoreData.poi.counts?.anchors ?? 0}</span>
+                          <span className="sp-kpi-lbl">Anchors</span>
+                        </div>
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(63,185,80,0.3)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#3fb950' }}>{scoreData.poi.counts?.complementary ?? 0}</span>
+                          <span className="sp-kpi-lbl">Complementary</span>
+                        </div>
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(248,81,73,0.3)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#f85149' }}>{scoreData.poi.counts?.competitors ?? 0}</span>
+                          <span className="sp-kpi-lbl">Competitors</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="sp-empty-state">
+                  <i className="fa-solid fa-users" style={{ fontSize: 32, color: 'var(--border)', marginBottom: 12 }} />
+                  <p>Enable the <strong>Demographics</strong> layer<br />to see market insights here.</p>
+                </div>
+              )}
+            </div>
+
+            {/* ── RECOMMENDATIONS ── */}
+            {scoreData.recommendations?.length > 0 && (
+              <div className="sp-recs">
+                <div className="sp-section-title" style={{ marginBottom: 10 }}>
+                  <i className="fa-solid fa-lightbulb" style={{ color: '#d29922', marginRight: 6 }} />
+                  Insights
+                </div>
+                <ul className="sp-recs-list">
+                  {scoreData.recommendations.slice(0, 4).map((rec, i) => (
+                    <li key={i}>{rec}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
