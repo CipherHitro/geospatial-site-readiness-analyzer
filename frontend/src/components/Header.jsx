@@ -1,6 +1,8 @@
 import React from 'react';
 
-export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme, onThemeToggle, onSidebarToggle, onHotspotsRun }) {
+export default function Header({
+  onCompareOpen, useCase, onUseCaseChange, theme, onThemeToggle, onSidebarToggle, onHotspotsRun, onRunAI
+}) {
   return (
     <header className="topnav" id="topnav">
       <div className="topnav__brand">
@@ -36,6 +38,9 @@ export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme,
         <button className="icon-btn" title="Toggle Theme" onClick={onThemeToggle}>
           <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
         </button>
+        <button className="icon-btn" title="Run AI Readiness Analysis" onClick={onRunAI} style={{ color: '#a371f7' }}>
+          <i className="fa-solid fa-brain"></i>
+        </button>
         <button className="icon-btn" title="Run Hotspot Analysis" onClick={onHotspotsRun}>
           <i className="fa-solid fa-fire"></i>
         </button>
@@ -46,7 +51,7 @@ export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme,
           <i className="fa-solid fa-sidebar"></i>
         </button>
         <div className="status-dot" title="API Status">
-          <span className="dot dot--green" style={{boxShadow:'0 0 6px #3fb950', background:'#3fb950'}}></span>
+          <span className="dot dot--green" style={{ boxShadow: '0 0 6px #3fb950', background: '#3fb950' }}></span>
         </div>
       </div>
     </header>

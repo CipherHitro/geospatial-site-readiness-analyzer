@@ -9,7 +9,7 @@ def get_zoning_score(lat: float, lng: float, db: Session, use_case: str = "retai
     # ST_Within checks if the point falls inside a zone polygon
     # If point is not inside any zone (open land etc), returns nothing
     zone_query = f"""
-        SELECT zone_type, allows_commercial
+        SELECT zone_type
         FROM zones
         WHERE ST_Within(
             ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326),
@@ -22,10 +22,8 @@ def get_zoning_score(lat: float, lng: float, db: Session, use_case: str = "retai
     if zone_result.empty:
         # Point not inside any mapped zone — treat as unknown/other
         zone_type = "unknown"
-        allows_commercial = False
     else:
         zone_type = zone_result.iloc[0]["zone_type"]
-        allows_commercial = bool(zone_result.iloc[0]["allows_commercial"])
 
     # ── QUERY 2: Building density within 500m ────────────────────
     # Get total count, area, and breakdown by building_type
@@ -173,9 +171,7 @@ def get_zoning_score(lat: float, lng: float, db: Session, use_case: str = "retai
             return min(100.0, (other_pct + industrial_pct) * 1.5)
         return 40.0
 
-    def apply_hard_cap(sc, z_type, allows_comm, u_case):
-        if not allows_comm and u_case in ["retail", "ev_charging"]:
-            sc = min(sc, 40.0)
+    def apply_hard_cap(sc, z_type, u_case):
         if z_type == "restricted":
             sc = min(sc, 15.0)
         if z_type == "unknown" and u_case == "retail":
@@ -202,12 +198,11 @@ def get_zoning_score(lat: float, lng: float, db: Session, use_case: str = "retai
         mix_score * weights["mix"]
     )
     
-    final_score = apply_hard_cap(raw_final, zone_type, allows_commercial, use_case)
+    final_score = apply_hard_cap(raw_final, zone_type, use_case)
 
     return {
         "zoning_score":               round(float(final_score), 1),
         "zone_type":                  zone_type,
-        "allows_commercial":          allows_commercial,
         "building_count_500m":        building_count,
         "total_built_area_sqm":       round(total_built_area),
         "zone_distribution_500m_pct": zone_distribution_500m,

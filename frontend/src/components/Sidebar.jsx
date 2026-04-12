@@ -10,9 +10,9 @@ const layersConfig = [
 ];
 
 export default function Sidebar({
-  activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData
+  activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, onRunAI, hotspotsData, catchmentData, scoreData,
+  activeTab, setActiveTab
 }) {
-  const [activeTab, setActiveTab] = useState('layers');
   const [catchMode, setCatchMode] = useState('drive');
   const [catchBands, setCatchBands] = useState([10, 20]);
 
@@ -95,7 +95,7 @@ export default function Sidebar({
               <span>Very High</span>
             </div>
           </div>
-          
+
           <div className="h3-legend-box" style={{ display: activeLayers.risk ? 'block' : 'none', marginTop: '12px' }}>
             <div className="legend-title">Environmental Risk — Flood Exposure</div>
             <div className="h3-legend-gradient" style={{ background: 'linear-gradient(to right, #3fb950, #d29922, #f85149, #8b0000)' }}></div>
@@ -206,10 +206,15 @@ export default function Sidebar({
       {/* ANALYSIS TAB */}
       <div className={`tab-panel ${activeTab === 'analysis' ? 'active' : ''}`}>
         <div className="panel-section">
-          <h3 className="section-title"><i className="fa-solid fa-fire"></i> Hotspot Analysis</h3>
-          <p className="section-desc">Run AI cluster detection across Ahmedabad.</p>
+          <h3 className="section-title"><i className="fa-solid fa-fire"></i> Hotspot & AI Analysis</h3>
+          <p className="section-desc">Run comprehensive site evaluation or AI cluster detection across Ahmedabad.</p>
+
+          <button className="action-btn" onClick={onRunAI} style={{ marginBottom: 8, background: '#a371f7', color: '#fff', borderColor: '#a371f7' }}>
+            <i className="fa-solid fa-brain"></i> AI Site Readiness Analysis
+          </button>
+
           <button className="action-btn" onClick={onHotspotsRun}>
-            <i className="fa-solid fa-fire"></i> Run Hotspot Analysis
+            <i className="fa-solid fa-fire"></i> Run Hotspot Clustering
           </button>
 
           {hotspotsData && hotspotsData.summary && (
@@ -226,6 +231,26 @@ export default function Sidebar({
                 <span className="stat-num" style={{ display: 'block', fontSize: 20, fontWeight: 700, color: '#d29922' }}>{hotspotsData.summary.cluster_count}</span>
                 <span className="stat-lbl" style={{ fontSize: 11, color: 'var(--text-muted)' }}>Clusters</span>
               </div>
+            </div>
+          )}
+
+          {scoreData && scoreData.ai_insight && (
+            <div className="sidebar-ai-hint" style={{
+              marginTop: 20,
+              padding: '16px',
+              background: 'linear-gradient(135deg, rgba(163, 113, 247, 0.1) 0%, rgba(88, 166, 255, 0.05) 100%)',
+              border: '1px solid rgba(163, 113, 247, 0.2)',
+              borderRadius: '10px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                <i className="fa-solid fa-sparkles" style={{ color: '#a371f7', fontSize: '14px' }}></i>
+                <span style={{ fontWeight: 600, fontSize: '12px', color: '#a371f7', textTransform: 'uppercase' }}>
+                  AI Site Recommendations
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.5', color: '#8b949e', fontStyle: 'italic' }}>
+                "{scoreData.ai_insight}"
+              </p>
             </div>
           )}
         </div>

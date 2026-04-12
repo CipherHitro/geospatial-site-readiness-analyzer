@@ -278,6 +278,55 @@ function App() {
     }
   };
 
+  const [sidebarTab, setSidebarTab] = useState('layers');
+
+  const handleRunOrchestrator = async () => {
+    if (!lastClicked) {
+      alert("Please select a point on the map first!");
+      return;
+    }
+
+    setSidebarTab('analysis');
+
+    // Convert current percentage weights to floats (sum to 1.0)
+    const weightPayload = {
+      demographics: weights.demographics / 100,
+      transport: weights.transportation / 100,
+      poi: weights.competition / 100,
+      zoning: weights.landuse / 100,
+      environment: weights.risk / 100
+    };
+
+    try {
+      const res = await fetch('http://localhost:8000/api/site/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lat: lastClicked.lat,
+          lng: lastClicked.lng,
+          use_case: useCase,
+          weights: weightPayload
+        })
+      });
+
+      const data = await res.json();
+
+      // Inject AI response and new score label straight into scoreData
+      setScoreData(prev => ({
+        ...prev,
+        ai_insight: data.ai_insight,
+        composite_score: data.composite_score,
+        score_label: data.score_label,
+        hard_cap_applied: data.hard_cap_applied
+      }));
+
+
+    } catch (e) {
+      console.error('Orchestrator error', e);
+      alert("Failed to run AI Orchestrator API.");
+    }
+  };
+
   const handleHotspotsRun = async () => {
     try {
       const res = await fetch(`http://localhost:8000/api/hotspots?use_case=${useCase}`);
@@ -348,6 +397,7 @@ function App() {
         onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onHotspotsRun={handleHotspotsRun}
+        onRunAI={handleRunOrchestrator}
       />
       <main className={`app-layout ${!isSidebarOpen ? 'sidebar-collapsed' : ''}`} id="app-layout">
         <Sidebar
@@ -358,8 +408,12 @@ function App() {
           onHotspotsRun={handleHotspotsRun}
           onCatchmentRun={handleCatchmentRun}
           onRescore={() => lastClicked ? handleMapClick(lastClicked) : alert("Click a point first")}
+          onRunAI={handleRunOrchestrator}
           hotspotsData={hotspotsData}
           catchmentData={catchmentData}
+          scoreData={scoreData}
+          activeTab={sidebarTab}
+          setActiveTab={setSidebarTab}
         />
         <div className="map-area">
           <MapComponent

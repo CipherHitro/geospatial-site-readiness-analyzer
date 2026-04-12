@@ -129,9 +129,57 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
             <div className="sp-left">
               {/* Ring */}
               <div className="sp-ring-section">
-                <ScoreRing score={scoreData.score || 0} />
-                <div className="sp-ring-lbl">Site Readiness Score</div>
+                <ScoreRing score={scoreData.composite_score || scoreData.score || 0} />
+                <div className="sp-ring-lbl">
+                  {scoreData.composite_score ? `Unified Site Readiness: ${scoreData.score_label}` : 'Site Readiness Score'}
+                </div>
               </div>
+
+              {scoreData.layer_details?.zoning?.zone_type === 'restricted' && (
+                <div style={{
+                  margin: '12px 16px',
+                  padding: '10px 12px',
+                  background: 'rgba(248,81,73,0.1)',
+                  border: '1px solid rgba(248,81,73,0.2)',
+                  borderRadius: '8px',
+                  color: '#f85149',
+                  fontSize: '12px',
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'center'
+                }}>
+                  <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '16px' }}></i>
+                  <span><strong>Restricted Zone Alert:</strong> This location is within a restricted area; viability is severely limited.</span>
+                </div>
+              )}
+
+              {scoreData.ai_insight && (
+                <div className="sp-ai-card" style={{
+                  margin: '0 16px 16px',
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, rgba(163, 113, 247, 0.15) 0%, rgba(88, 166, 255, 0.1) 100%)',
+                  border: '1px solid rgba(163, 113, 247, 0.3)',
+                  borderRadius: '12px',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    position: 'absolute', top: -10, right: -10,
+                    fontSize: 60, opacity: 0.05, transform: 'rotate(15deg)', pointerEvents: 'none'
+                  }}>
+                    <i className="fa-solid fa-brain"></i>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <i className="fa-solid fa-sparkles" style={{ color: '#a371f7' }}></i>
+                    <span style={{ fontWeight: 700, fontSize: '13px', color: '#a371f7', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      AI Strategic Insight
+                    </span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.6', color: 'var(--text-main)', fontStyle: 'italic' }}>
+                    "{scoreData.ai_insight}"
+                  </p>
+                </div>
+              )}
 
               {/* Progress bars for each active breakdown metric */}
               <div className="sp-bars-section">
