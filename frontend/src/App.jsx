@@ -60,7 +60,7 @@ function App() {
     if (isInitialMount.current) {
       isInitialMount.current = false;
     } else if (lastClicked) {
-      handleMapClick(lastClicked);
+      handleMapClick(lastClicked, true);
     }
   }, [activeLayers]);
 
@@ -95,7 +95,7 @@ function App() {
 
   const toggleLayer = (layerId) => setActiveLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
 
-  const handleMapClick = async (lngLat) => {
+  const handleMapClick = async (lngLat, isRefresh = false) => {
     const total = Object.values(weights).reduce((a, b) => a + b, 0);
     if (total !== 100) {
       alert("Weights must sum exactly to 100% before scoring.");
@@ -103,12 +103,14 @@ function App() {
     }
 
     setLastClicked(lngLat);
-    setDemographicsDetail(null);
-    setZoningDetail(null);
-    setMapInfrastructure(null);
-    setPoiDetail(null);
-    setEnvironmentDetail(null);
-    setH3CellDetail(null);
+    if (!isRefresh) {
+      setDemographicsDetail(null);
+      setZoningDetail(null);
+      setMapInfrastructure(null);
+      setPoiDetail(null);
+      setEnvironmentDetail(null);
+      setH3CellDetail(null);
+    }
 
     let newScoreData = {
       lat: lngLat.lat,

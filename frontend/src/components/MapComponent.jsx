@@ -239,7 +239,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         )}
 
         {/* ── H3 ACTIVE CELL HIGHLIGHT ── */}
-        {h3CellHighlightGeoJSON && (
+        {activeLayers.demographics && h3CellHighlightGeoJSON && (
           <Source id="h3_cell_highlight_src" type="geojson" data={h3CellHighlightGeoJSON}>
             <Layer
               id="h3_cell_highlight_fill"
@@ -557,7 +557,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         )}
 
         {/* INFRASTRUCTURE rendering for Transport layer details */}
-        {mapInfrastructure && mapInfrastructure.roads && (
+        {activeLayers.transportation && mapInfrastructure && mapInfrastructure.roads && (
           <Source id="infra_roads_src" type="geojson" data={{ type: "FeatureCollection", features: mapInfrastructure.roads.filter(r => r.geometry).map(r => ({ type: "Feature", geometry: r.geometry, properties: r })) }}>
             <Layer id="infra_roads_line" type="line" paint={{
               'line-color': [
@@ -584,7 +584,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
-        {mapInfrastructure && mapInfrastructure.busStops && mapInfrastructure.busStops.length > 0 && mapInfrastructure.busStops.filter(s => s.geometry).map((stop, i) => (
+        {activeLayers.transportation && mapInfrastructure && mapInfrastructure.busStops && mapInfrastructure.busStops.length > 0 && mapInfrastructure.busStops.filter(s => s.geometry).map((stop, i) => (
           <Marker key={`bus-${i}`} longitude={stop.geometry.coordinates[0]} latitude={stop.geometry.coordinates[1]} anchor="center">
             <div
               onClick={(e) => {
@@ -613,7 +613,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Marker>
         ))}
 
-        {mapInfrastructure && mapInfrastructure.stations && mapInfrastructure.stations.length > 0 && mapInfrastructure.stations.filter(s => s.geometry).map((station, i) => (
+        {activeLayers.transportation && mapInfrastructure && mapInfrastructure.stations && mapInfrastructure.stations.length > 0 && mapInfrastructure.stations.filter(s => s.geometry).map((station, i) => (
           <Marker key={`train-${i}`} longitude={station.geometry.coordinates[0]} latitude={station.geometry.coordinates[1]} anchor="center">
             <div
               onClick={(e) => {
