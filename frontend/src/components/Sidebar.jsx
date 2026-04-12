@@ -10,7 +10,7 @@ const layersConfig = [
 ];
 
 export default function Sidebar({
-  activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData
+  isOpen, onToggle, activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData
 }) {
   const [activeTab, setActiveTab] = useState('layers');
   const [catchMode, setCatchMode] = useState('drive');
@@ -27,7 +27,17 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="sidebar" id="sidebar">
+    <aside className={`sidebar ${isOpen ? '' : 'collapsed'}`} id="sidebar">
+      <button
+        type="button"
+        className="sidebar-toggle-btn"
+        onClick={onToggle}
+        aria-label={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        title={isOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+      >
+        <i className={`fa-solid ${isOpen ? 'fa-chevron-left' : 'fa-chevron-right'}`}></i>
+      </button>
+
       {/* TABS */}
       <div className="sidebar__tabs" role="tablist">
         <button className={`tab-btn ${activeTab === 'layers' ? 'active' : ''}`} onClick={() => setActiveTab('layers')}>

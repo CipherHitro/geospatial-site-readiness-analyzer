@@ -34,7 +34,6 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
   const [hoverInfo, setHoverInfo] = useState(null);
   const [demoHover, setDemoHover] = useState(false);
   const [zoningHover, setZoningHover] = useState(false);
-  const [riskHover, setRiskHover] = useState(false);
 
   // Removed 1km circle logic
 
@@ -130,13 +129,10 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
             if (lid === 'h3_cell_highlight_fill') {
               setDemoHover(true);
               setZoningHover(true);
-              setRiskHover(true);
-            } else if (lid === 'layer_risk') {
-              setRiskHover(true);
             }
           }
         }}
-        onMouseLeave={() => { setDemoHover(false); setZoningHover(false); setRiskHover(false); }}
+        onMouseLeave={() => { setDemoHover(false); setZoningHover(false); }}
       >
         <NavigationControl position="bottom-right" />
 
@@ -269,7 +265,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         )}
 
         {/* ENVIRONMENTAL RISK POPUP */}
-        {activeLayers.risk && h3CellDetail && lastClicked && (riskHover || demoHover || zoningHover || !scoreData) && (
+        {activeLayers.risk && h3CellDetail && lastClicked && (
           <Popup
             longitude={riskPopupCoords.lng}
             latitude={riskPopupCoords.lat}
@@ -605,33 +601,9 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
-        {/* ENVIRONMENTAL RISK LAYER */}
-        {activeLayers.risk && h3GridData && (
-          <Source id="src_risk" type="geojson" data={h3GridData}>
-            <Layer
-              id="layer_risk"
-              type="fill"
-              paint={{
-                'fill-color': [
-                  'interpolate', ['linear'],
-                  ['get', 'flood_score'],
-                  0, '#3fb950',
-                  30, '#d29922',
-                  70, '#f85149',
-                  100, '#8b0000'
-                ],
-                'fill-opacity': 0.4
-              }}
-            />
-            <Layer
-               id="layer_risk_line"
-               type="line"
-               paint={{
-                 'line-color': '#f85149',
-                 'line-width': 1,
-                 'line-opacity': 0.2
-               }}
-            />
+        {activeLayers.risk && layerData.risk && (
+          <Source id="src_risk" type="geojson" data={layerData.risk}>
+            <Layer id="layer_risk" type="fill" paint={{ 'fill-color': '#f85149', 'fill-opacity': 0.4 }} />
           </Source>
         )}
 

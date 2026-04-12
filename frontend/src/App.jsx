@@ -294,9 +294,12 @@ function App() {
         onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onHotspotsRun={handleHotspotsRun}
+        isSidebarOpen={isSidebarOpen}
       />
       <main className={`app-layout ${!isSidebarOpen ? 'sidebar-collapsed' : ''}`} id="app-layout">
         <Sidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
           activeLayers={activeLayers}
           toggleLayer={toggleLayer}
           weights={weights}
