@@ -10,7 +10,7 @@ const layersConfig = [
 ];
 
 export default function Sidebar({
-  isOpen, onToggle, activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData
+  isOpen, onToggle, activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData, visitedHistory, onDeleteHistory
 }) {
   const [activeTab, setActiveTab] = useState('layers');
   const [catchMode, setCatchMode] = useState('drive');
@@ -51,6 +51,9 @@ export default function Sidebar({
         </button>
         <button className={`tab-btn ${activeTab === 'analysis' ? 'active' : ''}`} onClick={() => setActiveTab('analysis')}>
           <i className="fa-solid fa-chart-simple"></i><span>Analysis</span>
+        </button>
+        <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
+          <i className="fa-solid fa-clock-rotate-left"></i><span>History</span>
         </button>
       </div>
 
@@ -238,6 +241,45 @@ export default function Sidebar({
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* HISTORY TAB */}
+      <div className={`tab-panel ${activeTab === 'history' ? 'active' : ''}`}>
+        <div className="panel-section">
+          <h3 className="section-title"><i className="fa-solid fa-clock-rotate-left"></i> Visited Sites History</h3>
+          <p className="section-desc">History of analyzed sites.</p>
+
+          <div className="history-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+            {(!visitedHistory || visitedHistory.length === 0) ? (
+              <div style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+                No sites visited yet.
+              </div>
+            ) : (
+              visitedHistory.map((site, idx) => (
+                <div key={idx} style={{ background: 'var(--surface-3)', padding: '12px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ color: '#f7f2e8', fontWeight: 600, fontSize: '14px' }}>{site.name}</span>
+                    <span style={{ color: '#d9b15b', fontSize: '13px' }}>Score: {site.score} ({site.grade})</span>
+                  </div>
+                  <button onClick={() => onDeleteHistory(idx)} style={{ background: 'transparent', border: 'none', color: '#c96a5f', cursor: 'pointer', padding: '6px' }} title="Delete History">
+                    <i className="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          <button 
+            className="action-btn" 
+            style={{ marginTop: 16, width: '100%', background: visitedHistory?.length >= 2 ? '#d9b15b' : 'var(--surface-3)', color: visitedHistory?.length >= 2 ? '#1a1c1a' : 'var(--text-muted)', cursor: visitedHistory?.length >= 2 ? 'pointer' : 'not-allowed' }}
+            disabled={!visitedHistory || visitedHistory.length < 2}
+            onClick={() => {
+               window.open(window.location.origin + '?view=compare', '_blank');
+            }}
+          >
+            <i className="fa-solid fa-layer-group"></i> Compare in New Window
+          </button>
         </div>
       </div>
     </aside>

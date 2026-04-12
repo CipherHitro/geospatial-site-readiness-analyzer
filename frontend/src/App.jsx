@@ -22,7 +22,7 @@ function App() {
   const [hotspotsData, setHotspotsData] = useState(null);
   const [catchmentData, setCatchmentData] = useState(null);
 
-  const [savedSites, setSavedSites] = useState([]);
+  const [visitedHistory, setVisitedHistory] = useState([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
 
   const [mapInfrastructure, setMapInfrastructure] = useState(null);
@@ -40,7 +40,22 @@ function App() {
       .then(r => r.json())
       .then(d => setPresets(d.presets))
       .catch(console.error);
+
+    // Load visited history from localStorage if available
+    const saved = localStorage.getItem('visitedHistory');
+    if (saved) {
+      try {
+        setVisitedHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to load history', e);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    // Save to local storage whenever it changes
+    localStorage.setItem('visitedHistory', JSON.stringify(visitedHistory));
+  }, [visitedHistory]);
 
   // Fetch H3 grid data when the h3grid is toggled on
   useEffect(() => {
@@ -73,6 +88,7 @@ function App() {
 
   const handleUseCaseChange = (uc) => {
     setUseCase(uc);
+    localStorage.setItem('compareUseCase', uc);
     if (presets[uc]) {
       const w = presets[uc].weights;
       setWeights({
@@ -85,8 +101,12 @@ function App() {
     }
   };
 
+  const handleDeleteHistory = (index) => {
+    setVisitedHistory(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleCompareAdd = (data) => {
-    setSavedSites(prev => [...prev, { name: `Site ${prev.length + 1}`, ...data }]);
+    setVisitedHistory(prev => [...prev, { name: `Site ${prev.length + 1}`, ...data }]);
     setIsCompareOpen(true);
   };
 
@@ -282,6 +302,14 @@ function App() {
       setScoreData(newScoreData);
       setIsPanelVisible(true);
       setCatchmentData(null);
+
+      // Auto-add to visited history ONLY using real data retrieved
+      setVisitedHistory(prev => {
+        const d = new Date();
+        const timeStr = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+        const newSite = { name: `Site ${prev.length + 1} (${timeStr})`, ...newScoreData };
+        return [...prev, newSite];
+      });
     }
   };
 
@@ -370,6 +398,8 @@ function App() {
           onRescore={() => lastClicked ? handleMapClick(lastClicked) : alert("Click a point first")}
           hotspotsData={hotspotsData}
           catchmentData={catchmentData}
+          visitedHistory={visitedHistory}
+          onDeleteHistory={handleDeleteHistory}
         />
         <div className="map-area">
           <MapComponent
@@ -399,9 +429,19 @@ function App() {
           />
         </div>
       </main>
-      <CompareModal isOpen={isCompareOpen} onClose={() => setIsCompareOpen(false)} savedSites={savedSites} />
+      <CompareModal isOpen={isCompareOpen} onClose={() => setIsCompareOpen(false)} savedSites={visitedHistory} useCase={useCase} />
     </>
   );
 }
 
-export default App;
+export default function Root() {
+  if (window.location.search.includes('view=compare')) {
+    return <React.Suspense fallback={<div>Loading...</div>}>
+      <CompareWindow />
+    </React.Suspense>;
+  }
+  return <App />;
+}
+
+// Lazy load CompareWindow
+const CompareWindow = React.lazy(() => import('./components/CompareWindow'));

@@ -1,6 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-export default function CompareModal({ isOpen, onClose, savedSites = [] }) {
+export default function CompareModal({ isOpen, onClose, savedSites = [], useCase = 'retail' }) {
+  const [userNeed, setUserNeed] = useState('');
+  const [analysisResult, setAnalysisResult] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [recommendedSiteId, setRecommendedSiteId] = useState(null);
   const chartRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -73,8 +77,8 @@ export default function CompareModal({ isOpen, onClose, savedSites = [] }) {
           <button className="icon-btn" onClick={onClose}><i className="fa-solid fa-xmark"></i></button>
         </div>
         
-        <div className="modal__body">
-          <div className="compare-toolbar">
+        <div className="modal__body" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="compare-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
              <button className="action-btn" style={{width: 'auto', padding: '8px 18px'}}><i className="fa-solid fa-file-csv"></i> Export CSV</button>
           </div>
 
@@ -106,6 +110,85 @@ export default function CompareModal({ isOpen, onClose, savedSites = [] }) {
             </div>
           </div>
           
+          {savedSites.length > 1 && (
+            <div className="ai-analysis-section" style={{ background: '#1c1e1c', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
+              <h3 style={{ marginBottom: '15px', color: '#d9b15b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <i className="fa-solid fa-robot"></i> AI Site Recommendation
+              </h3>
+              
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#d7e0d8', fontSize: '14px' }}>
+                  Specific Needs or Context (Optional)
+                </label>
+                <textarea 
+                  value={userNeed}
+                  onChange={(e) => setUserNeed(e.target.value)}
+                  placeholder="E.g., I need a site with high foot traffic but low environmental risk..."
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#2c2e2c', color: '#fff', minHeight: '60px', fontFamily: 'Inter' }}
+                />
+              </div>
+
+              <button 
+                onClick={async () => {
+                  setIsAnalyzing(true);
+                  setAnalysisResult('');
+                  
+                  const payload = {
+                    use_case: useCase,
+                    user_need: userNeed,
+                    sites: savedSites.map((s, idx) => ({
+                      id: `site_${idx}`,
+                      name: s.name,
+                      lat: s.lat,
+                      lng: s.lng,
+                      scores: {
+                        overall: s.score || 0,
+                        demographics: s.breakdown?.demographics || 0,
+                        transportation: s.breakdown?.transportation || 0,
+                        competition: s.breakdown?.competition || 0,
+                        landuse: s.breakdown?.landuse || 0,
+                        risk: s.breakdown?.risk || 0
+                      },
+                      layer_data: {
+                        demographics: s.demographics || {},
+                        transport: s.transport || {},
+                        zoning: s.zoning || {},
+                        poi: s.poi || {},
+                        environment: s.environment || {}
+                      }
+                    }))
+                  };
+                  
+                  try {
+                    const res = await fetch('http://localhost:8000/api/ai/compare', {
+                      method: 'POST',
+                      headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.detail || 'Analysis failed');
+                    setAnalysisResult(data.analysis);
+                    setRecommendedSiteId(data.recommended_site_id);
+                  } catch (err) {
+                    setAnalysisResult(`Error: ${err.message}`);
+                  } finally {
+                    setIsAnalyzing(false);
+                  }
+                }}
+                disabled={isAnalyzing}
+                style={{ background: '#d9b15b', color: '#1a1c1a', padding: '10px 20px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                {isAnalyzing ? <><i className="fa-solid fa-spinner fa-spin"></i> Analyzing...</> : <><i className="fa-solid fa-magic"></i> Suggest Best Site</>}
+              </button>
+
+              {analysisResult && (
+                <div style={{ marginTop: '20px', padding: '15px', background: '#2c2e2c', borderRadius: '6px', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '14px', color: '#f7f2e8' }}>
+                  {analysisResult}
+                </div>
+              )}
+            </div>
+          )}
+
           {savedSites.length === 0 && (
             <div className="compare-empty" style={{textAlign: 'center', padding: '32px', color: '#d7e0d8'}}>
               <i className="fa-solid fa-map-pin fa-2x" style={{marginBottom: 12}}></i>
