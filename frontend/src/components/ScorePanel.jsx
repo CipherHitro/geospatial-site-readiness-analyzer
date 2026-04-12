@@ -228,18 +228,253 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                         <i className="fa-solid fa-map-location-dot" style={{ marginRight: 6, color: '#a371f7' }} />
                         POI: {scoreData.poi.label}
                       </div>
+
                       <div className="sp-kpi-grid">
-                        <div className="sp-kpi" style={{ borderColor: 'rgba(88,166,255,0.3)' }}>
-                          <span className="sp-kpi-val" style={{ color: '#58a6ff' }}>{scoreData.poi.counts?.anchors ?? 0}</span>
-                          <span className="sp-kpi-lbl">Anchors</span>
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(163,113,247,0.3)', background: 'rgba(163,113,247,0.05)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#a371f7' }}>
+                            {scoreData.poi.poi_score ? Math.round(scoreData.poi.poi_score) : (Math.round(scoreData.poi.score) || '—')}
+                          </span>
+                          <span className="sp-kpi-lbl">POI Score</span>
                         </div>
-                        <div className="sp-kpi" style={{ borderColor: 'rgba(63,185,80,0.3)' }}>
-                          <span className="sp-kpi-val" style={{ color: '#3fb950' }}>{scoreData.poi.counts?.complementary ?? 0}</span>
-                          <span className="sp-kpi-lbl">Complementary</span>
+                        <div className="sp-kpi">
+                          <span className="sp-kpi-val" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            Anchors: {Math.round((scoreData.poi.weights_used?.anchor || 0) * 100)}%<br />
+                            Compl.: {Math.round((scoreData.poi.weights_used?.complementary || 0) * 100)}%<br />
+                            Comp.: {Math.round((scoreData.poi.weights_used?.competitor || 0) * 100)}%
+                          </span>
+                          <span className="sp-kpi-lbl">Active Weights</span>
                         </div>
-                        <div className="sp-kpi" style={{ borderColor: 'rgba(248,81,73,0.3)' }}>
-                          <span className="sp-kpi-val" style={{ color: '#f85149' }}>{scoreData.poi.counts?.competitors ?? 0}</span>
-                          <span className="sp-kpi-lbl">Competitors</span>
+                      </div>
+
+                      <div className="sp-stat-rows">
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-anchor" style={{ width: 14, color: '#58a6ff' }} /> Anchors
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#58a6ff' }}>
+                            {scoreData.poi.anchor_count ?? scoreData.poi.counts?.anchors ?? 0}
+                            {scoreData.poi.anchor_score != null && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
+                                ({Math.round(scoreData.poi.anchor_score)} pt)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-thumbs-up" style={{ width: 14, color: '#3fb950' }} /> Complementary
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#3fb950' }}>
+                            {scoreData.poi.complementary_count ?? scoreData.poi.counts?.complementary ?? 0}
+                            {scoreData.poi.complementary_score != null && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
+                                ({Math.round(scoreData.poi.complementary_score)} pt)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-store-slash" style={{ width: 14, color: '#f85149' }} /> Competitors
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#f85149' }}>
+                            {scoreData.poi.competitor_count ?? scoreData.poi.counts?.competitors ?? 0}
+                            {scoreData.poi.competitor_score != null && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
+                                ({Math.round(scoreData.poi.competitor_score)} pt)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Transport summary if available */}
+                  {scoreData.transport && (
+                    <div className="sp-poi-summary" style={{ marginTop: 16 }}>
+                      <div className="sp-section-title" style={{ marginBottom: 12 }}>
+                        <i className="fa-solid fa-car" style={{ marginRight: 6, color: '#e3883e' }} />
+                        Transport & Accessibility
+                      </div>
+                      <div className="sp-kpi-grid">
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(210,153,34,0.3)', background: 'rgba(210,153,34,0.05)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#d29922' }}>
+                            {scoreData.transport.transport_score ?? '—'}
+                          </span>
+                          <span className="sp-kpi-lbl">Transport Score</span>
+                        </div>
+                        <div className="sp-kpi">
+                          <span className="sp-kpi-val" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            Bus: {Math.round(scoreData.transport.weights_used?.bus * 100)}%<br />
+                            Rail: {Math.round(scoreData.transport.weights_used?.station * 100)}%<br />
+                            Road: {Math.round(scoreData.transport.weights_used?.road * 100)}%
+                          </span>
+                          <span className="sp-kpi-lbl">Active Weights</span>
+                        </div>
+                      </div>
+
+                      <div className="sp-stat-rows">
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-bus" style={{ width: 14 }} /> Nearest Bus
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right' }}>
+                            {scoreData.transport.nearest_bus_stop}
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 4 }}>
+                              ({scoreData.transport.bus_stop_distance_m}m)
+                            </span>
+                          </span>
+                        </div>
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-train" style={{ width: 14 }} /> Nearest Station
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right' }}>
+                            {scoreData.transport.nearest_station}
+                            <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 4 }}>
+                              ({scoreData.transport.station_distance_m}m)
+                            </span>
+                          </span>
+                        </div>
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl">
+                            <i className="fa-solid fa-road" style={{ width: 14 }} /> Primary Roads (500m)
+                          </span>
+                          <span className="sp-stat-val">
+                            {Number(scoreData.transport.total_road_length_m).toLocaleString()}m
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Zoning summary if available */}
+                  {scoreData.zoning && (
+                    <div className="sp-poi-summary" style={{ marginTop: 16 }}>
+                      <div className="sp-section-title" style={{ marginBottom: 12 }}>
+                        <i className="fa-solid fa-city" style={{ marginRight: 6, color: '#f85149' }} />
+                        Land Use & Zoning
+                      </div>
+                      <div className="sp-kpi-grid">
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(248,81,73,0.3)', background: 'rgba(248,81,73,0.05)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#f85149' }}>
+                            {scoreData.zoning.zoning_score ?? '—'}
+                          </span>
+                          <span className="sp-kpi-lbl">Zoning Score</span>
+                        </div>
+                        <div className="sp-kpi">
+                          <span className="sp-kpi-val" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            Zone: {Math.round((scoreData.zoning.weights_used?.zone || 0) * 100)}%<br />
+                            Den: {Math.round((scoreData.zoning.weights_used?.density || 0) * 100)}%<br />
+                            Mix: {Math.round((scoreData.zoning.weights_used?.mix || 0) * 100)}%
+                          </span>
+                          <span className="sp-kpi-lbl">Active Weights</span>
+                        </div>
+                      </div>
+
+                      <div className="sp-stat-rows">
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-building" style={{ width: 14 }} /> Zone Type
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right', textTransform: 'capitalize' }}>
+                            {scoreData.zoning.zone_type}
+                            {scoreData.zoning.breakdown?.zone_score != null && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
+                                ({Math.round(scoreData.zoning.breakdown.zone_score)} pt)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-layer-group" style={{ width: 14 }} /> Density
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right' }}>
+                            {scoreData.zoning.building_count_500m} Bldgs
+                            {scoreData.zoning.breakdown?.building_density_score != null && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
+                                ({Math.round(scoreData.zoning.breakdown.building_density_score)} pt)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-chart-pie" style={{ width: 14 }} /> Mix Score
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right' }}>
+                            {scoreData.zoning.breakdown?.commercial_mix_score != null ? Math.round(scoreData.zoning.breakdown.commercial_mix_score) : '—'} pt
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Environment summary if available */}
+                  {scoreData.environment && (
+                    <div className="sp-poi-summary" style={{ marginTop: 16 }}>
+                      <div className="sp-section-title" style={{ marginBottom: 12 }}>
+                        <i className="fa-solid fa-leaf" style={{ marginRight: 6, color: '#3fb950' }} />
+                        Environment & Safety
+                      </div>
+                      <div className="sp-kpi-grid">
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(63,185,80,0.3)', background: 'rgba(63,185,80,0.05)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#3fb950' }}>
+                            {scoreData.environment.environment_score ?? '—'}
+                          </span>
+                          <span className="sp-kpi-lbl">Risk Score</span>
+                        </div>
+                        <div className="sp-kpi">
+                          <span className="sp-kpi-val" style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            Fld: {Math.round((scoreData.environment.weights_used?.flood || 0) * 100)}%<br />
+                            AQI: {Math.round((scoreData.environment.weights_used?.aqi || 0) * 100)}%<br />
+                            Eq: {Math.round((scoreData.environment.weights_used?.earthquake || 0) * 100)}%
+                          </span>
+                          <span className="sp-kpi-lbl">Active Weights</span>
+                        </div>
+                      </div>
+
+                      <div className="sp-stat-rows">
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-water" style={{ width: 14 }} /> Flood Risk
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right' }}>
+                            {(scoreData.environment.flood_score_raw * 100).toFixed(0)}%
+                            {scoreData.environment.flood_safety_score != null && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
+                                ({Math.round(scoreData.environment.flood_safety_score)} pt)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-smog" style={{ width: 14 }} /> AQI
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right' }}>
+                            {scoreData.environment.aqi ?? 'N/A'}
+                            {scoreData.environment.aqi_score != null && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
+                                ({Math.round(scoreData.environment.aqi_score)} pt)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="sp-stat-row">
+                          <span className="sp-stat-lbl" style={{ width: '120px' }}>
+                            <i className="fa-solid fa-house-crack" style={{ width: 14 }} /> Seismic
+                          </span>
+                          <span className="sp-stat-val" style={{ textAlign: 'right' }}>
+                            Zone 3
+                            {scoreData.environment.earthquake_score != null && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
+                                ({Math.round(scoreData.environment.earthquake_score)} pt)
+                              </span>
+                            )}
+                          </span>
                         </div>
                       </div>
                     </div>

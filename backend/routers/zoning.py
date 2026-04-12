@@ -10,4 +10,4 @@ router = APIRouter(prefix="/api/zoning", tags=["Zoning"])
 
 @router.post("/score", response_model=ZoningResponse)
 def zoning_score(req: LocationRequest, db: Session = Depends(get_db)):
-    return get_zoning_score(req.lat, req.lng, db)
+    return get_zoning_score(req.lat, req.lng, db, use_case=req.use_case)

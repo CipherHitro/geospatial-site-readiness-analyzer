@@ -2,7 +2,34 @@ import json
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-def get_transport_score(lat: float, lng: float, db: Session) -> dict:
+def get_transport_score(lat: float, lng: float, db: Session, use_case: str = "retail") -> dict:
+    # ── Use-case weight table ──
+    USE_CASE_TRANSPORT_WEIGHTS = {
+        "retail":      {"bus": 0.30, "station": 0.20, "road": 0.50},
+        "ev_charging": {"bus": 0.10, "station": 0.10, "road": 0.80},
+        "warehouse":   {"bus": 0.05, "station": 0.05, "road": 0.90},
+        "telecom":     {"bus": 0.15, "station": 0.15, "road": 0.70},
+        "energy":      {"bus": 0.05, "station": 0.05, "road": 0.90},
+    }
+
+    def _bus_score(dist_m: float) -> float:
+        if dist_m <= 200:  return 100
+        if dist_m <= 500:  return 85
+        if dist_m <= 1000: return 65
+        if dist_m <= 2000: return 40
+        if dist_m <= 3000: return 20
+        return 0
+
+    def _station_score(dist_m: float) -> float:
+        if dist_m <= 500:  return 100
+        if dist_m <= 1000: return 80
+        if dist_m <= 2000: return 60
+        if dist_m <= 3500: return 30
+        if dist_m <= 5000: return 15
+        return 0
+
+    def _road_score(total_m: float) -> float:
+        return min(100.0, (total_m / 5000.0) * 100.0)
     bus_query = text(f"""
         SELECT name,
         ST_Distance(
@@ -117,10 +144,18 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
     station_name = station.get("name") if station else None
     station_dist = float(station.get("dist_m")) if station and station.get("dist_m") is not None else 10000.0
 
-    bus_score     = max(0, 100 - (bus_dist / 1000 * 100))
-    station_score = max(0, 100 - (station_dist / 3000 * 100))
-    road_score    = min(100, (road_length / 5000) * 100)
-    final_score   = (bus_score * 0.35) + (station_score * 0.40) + (road_score * 0.25)
+    # ── Tiered sub-scores ──
+    bus_sc     = _bus_score(bus_dist)
+    station_sc = _station_score(station_dist)
+    road_sc    = _road_score(road_length)
+
+    # ── Use-case weighted final score ──
+    weights = USE_CASE_TRANSPORT_WEIGHTS.get(use_case, USE_CASE_TRANSPORT_WEIGHTS["retail"])
+    final_score = (
+        bus_sc     * weights["bus"] +
+        station_sc * weights["station"] +
+        road_sc    * weights["road"]
+    )
 
     return {
         "transport_score":     round(float(final_score), 1),
@@ -130,10 +165,11 @@ def get_transport_score(lat: float, lng: float, db: Session) -> dict:
         "station_distance_m":  int(round(station_dist)),
         "total_road_length_m": round(road_length),
         "breakdown": {
-            "bus_score":     round(float(bus_score), 1),
-            "station_score": round(float(station_score), 1),
-            "road_score":    round(float(road_score), 1),
+            "bus_score":     round(float(bus_sc), 1),
+            "station_score": round(float(station_sc), 1),
+            "road_score":    round(float(road_sc), 1),
         },
+        "weights_used": weights,
         "roads_nearby": roads_nearby,
         "bus_stops_nearby": bus_stops_nearby,
         "stations_nearby": stations_nearby

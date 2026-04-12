@@ -182,7 +182,7 @@ function App() {
         fetch('http://localhost:8000/api/transport/score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
         })
           .then(res => res.json())
           .then(data => {
@@ -214,11 +214,12 @@ function App() {
         fetch('http://localhost:8000/api/zoning/score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
         })
           .then(res => res.json())
           .then(data => {
             setZoningDetail(data);
+            newScoreData.zoning = data;
             newScoreData.breakdown.landuse = data.zoning_score;
             newScoreData.score += data.zoning_score * (weights.landuse / 100);
           })
@@ -237,8 +238,9 @@ function App() {
           .then(res => res.json())
           .then(data => {
             setPoiDetail(data);
-            newScoreData.breakdown.competition = data.score;
-            newScoreData.score += data.score * (weights.competition / 100);
+            newScoreData.poi = data;
+            newScoreData.breakdown.competition = data.poi_score || data.score;
+            newScoreData.score += (data.poi_score || data.score) * (weights.competition / 100);
           })
           .catch(e => console.error('POI Scoring error', e))
       );
@@ -250,13 +252,14 @@ function App() {
         fetch('http://localhost:8000/api/environment/score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
         })
           .then(res => res.json())
           .then(data => {
             setEnvironmentDetail(data);
-            newScoreData.breakdown.risk = data.flood_score;
-            newScoreData.score += (100 - data.flood_score) * (weights.risk / 100);
+            newScoreData.environment = data;
+            newScoreData.breakdown.risk = data.environment_score;
+            newScoreData.score += data.environment_score * (weights.risk / 100);
           })
           .catch(e => console.error('Environment Scoring error', e))
       );

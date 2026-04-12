@@ -2,7 +2,7 @@
 import pandas as pd
 from sqlalchemy.orm import Session
 
-def get_zoning_score(lat: float, lng: float, db: Session) -> dict:
+def get_zoning_score(lat: float, lng: float, db: Session, use_case: str = "retail") -> dict:
     engine = db.get_bind()
 
     # ── QUERY 1: What zone is this point inside? ──────────────────
@@ -126,31 +126,83 @@ def get_zoning_score(lat: float, lng: float, db: Session) -> dict:
             })
 
     # ── SCORING ──────────────────────────────────────────────────
+    def calc_zone_score(z_type, u_case):
+        BASE_ZONE_SCORES = {
+            "commercial": 100, "residential": 55, "industrial": 35,
+            "restricted": 5, "other": 40, "unknown": 30
+        }
+        base = BASE_ZONE_SCORES.get(z_type, 30)
+        ZONE_BONUSES = {
+            ("industrial",  "warehouse"):   95,
+            ("industrial",  "energy"):      80,
+            ("industrial",  "telecom"):     60,
+            ("residential", "telecom"):     75,
+            ("residential", "ev_charging"): 70,
+            ("other",       "energy"):      75,
+            ("other",       "telecom"):     65,
+            ("commercial",  "retail"):      100,
+            ("commercial",  "ev_charging"): 95,
+        }
+        return ZONE_BONUSES.get((z_type, u_case), base)
 
-    # Zone score — based on zone type
-    # Commercial = best, residential = moderate, industrial = poor,
-    # restricted/unknown = very bad
-    zone_scores = {
-        "commercial":  100,
-        "residential":  60,
-        "industrial":   30,
-        "restricted":   10,
-        "other":        40,
-        "unknown":      30,
+    def calc_building_density_score(b_count, t_area, u_case):
+        count_score = min(100, b_count * 1.5)
+        area_score  = min(100, (t_area / 50000.0) * 100.0)
+        raw = (count_score + area_score) / 2.0
+        if u_case in ["warehouse", "energy"]:
+            return max(0, 100 - raw)   # invert: open space preferred
+        return raw
+
+    def calc_commercial_mix_score(z_dist, u_case):
+        if not z_dist:
+            return 40.0
+        commercial_pct  = z_dist.get("commercial", 0)
+        industrial_pct  = z_dist.get("industrial", 0)
+        residential_pct = z_dist.get("residential", 0)
+        other_pct       = z_dist.get("other", 0)
+        
+        if u_case == "retail":
+            return min(100.0, commercial_pct * 1.5)
+        elif u_case == "ev_charging":
+            return min(100.0, (commercial_pct + residential_pct) * 0.8)
+        elif u_case == "warehouse":
+            return min(100.0, industrial_pct * 2.0)
+        elif u_case == "telecom":
+            return min(100.0, 100.0 - z_dist.get("restricted", 0))
+        elif u_case == "energy":
+            return min(100.0, (other_pct + industrial_pct) * 1.5)
+        return 40.0
+
+    def apply_hard_cap(sc, z_type, allows_comm, u_case):
+        if not allows_comm and u_case in ["retail", "ev_charging"]:
+            sc = min(sc, 40.0)
+        if z_type == "restricted":
+            sc = min(sc, 15.0)
+        if z_type == "unknown" and u_case == "retail":
+            sc = min(sc, 50.0)
+        return sc
+
+    USE_CASE_ZONING_WEIGHTS = {
+        "retail":      {"zone": 0.55, "density": 0.25, "mix": 0.20},
+        "ev_charging": {"zone": 0.45, "density": 0.30, "mix": 0.25},
+        "warehouse":   {"zone": 0.50, "density": 0.30, "mix": 0.20},
+        "telecom":     {"zone": 0.40, "density": 0.25, "mix": 0.35},
+        "energy":      {"zone": 0.45, "density": 0.25, "mix": 0.30},
     }
-    zone_score = zone_scores.get(zone_type, 30)
 
-    # Building density score
-    # 0 buildings     → 0   (empty land, undeveloped)
-    # 50 buildings    → 50  (developing area)
-    # 100+ buildings  → 100 (dense developed area)
-    building_score = min(100, (building_count / 100) * 100)
+    z_score = calc_zone_score(zone_type, use_case)
+    density_score = calc_building_density_score(building_count, total_built_area, use_case)
+    mix_score = calc_commercial_mix_score(zone_distribution_500m, use_case)
 
-    # Hard constraint — if zone does NOT allow commercial,
-    # cap the final score at 40 regardless of building density
-    # This is what the problem statement calls "threshold constraint"
-    raw_score = (zone_score * 0.65) + (building_score * 0.35)
-    final_score = min(40.0, raw_score) if not allows_commercial else raw_score
+    weights = USE_CASE_ZONING_WEIGHTS.get(use_case, USE_CASE_ZONING_WEIGHTS["retail"])
+    
+    raw_final = (
+        z_score * weights["zone"] +
+        density_score * weights["density"] +
+        mix_score * weights["mix"]
+    )
+    
+    final_score = apply_hard_cap(raw_final, zone_type, allows_commercial, use_case)
 
     return {
         "zoning_score":               round(float(final_score), 1),
@@ -161,9 +213,12 @@ def get_zoning_score(lat: float, lng: float, db: Session) -> dict:
         "zone_distribution_500m_pct": zone_distribution_500m,
         "building_distribution_500m": building_distribution,
         "breakdown": {
-            "zone_score":     round(float(zone_score), 1),
-            "building_score": round(float(building_score), 1),
+            "zone_score":             round(float(z_score), 1),
+            "building_density_score": round(float(density_score), 1),
+            "commercial_mix_score":   round(float(mix_score), 1),
         },
-        "buildings_geojson": buildings_geojson,
-        "zones_geojson": zones_geojson
+        "weights_used":               weights,
+        "use_case":                   use_case,
+        "buildings_geojson":          buildings_geojson,
+        "zones_geojson":              zones_geojson
     }

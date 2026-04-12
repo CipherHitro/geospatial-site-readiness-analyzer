@@ -23,4 +23,4 @@ def environment_score(req: EnvironmentRequest, db: Session = Depends(get_db)):
     Body: { "lat": 23.0225, "lng": 72.5714 }
     Combines local flood risk metrics and live WAQI AQI metrics.
     """
-    return get_environment_score(req.lat, req.lng, db)
+    return get_environment_score(req.lat, req.lng, db, use_case=req.use_case)

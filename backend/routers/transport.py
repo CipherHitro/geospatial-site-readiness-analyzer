@@ -23,7 +23,7 @@ def transport_score(req: LocationRequest, db: Session = Depends(get_db)):
         isochrone_future = executor.submit(get_isochrones, req.lat, req.lng)
         
         # run DB score synchronously here so SQLAlchemy session is safe
-        score_data = get_transport_score(req.lat, req.lng, db)
+        score_data = get_transport_score(req.lat, req.lng, db, use_case=req.use_case)
         
         try:
             # wait up to 10 seconds for isochrone thread (with 5s requests timeout it should return earlier)
