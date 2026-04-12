@@ -275,7 +275,8 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           'h3_invisible_fill',
           'layer_poi',
           'layer_dynamic_poi',
-          'poi_detail_points'
+          'poi_detail_points',
+          'hotspots_fill'
         ]}
         onMouseMove={(e) => {
           if (e.features && e.features.length > 0) {
@@ -292,9 +293,19 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
               setRiskHover(false);
             }
 
+            // Find if mouse is over Hotspot hexagon
+            const hotspotFeat = e.features.find(f => f.layer.id === 'hotspots_fill');
             // Find if mouse is over POI point
             const poiFeat = e.features.find(f => f.layer.id === 'layer_poi' || f.layer.id === 'layer_dynamic_poi' || f.layer.id === 'poi_detail_points');
-            if (poiFeat) {
+
+            if (hotspotFeat) {
+              setHoverInfo({
+                isHotspot: true,
+                props: hotspotFeat.properties,
+                lng: e.lngLat.lng,
+                lat: e.lngLat.lat
+              });
+            } else if (poiFeat) {
               const props = poiFeat.properties;
               setHoverInfo(prev => {
                 const newId = `poi-${props.name}`;
@@ -311,7 +322,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
               });
             } else {
               setHoverInfo(prev => {
-                if (prev && prev.id && prev.id.startsWith('poi-')) return null;
+                if (prev && (prev.isHotspot || (prev.id && prev.id.startsWith('poi-')))) return null;
                 return prev;
               });
             }
@@ -321,7 +332,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
             setZoningHover(false);
             setRiskHover(false);
             setHoverInfo(prev => {
-              if (prev && prev.id && prev.id.startsWith('poi-')) return null;
+              if (prev && (prev.isHotspot || (prev.id && prev.id.startsWith('poi-')))) return null;
               return prev;
             });
           }
@@ -330,8 +341,8 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           setDemoHover(false);
           setZoningHover(false);
           setRiskHover(false);
-          // Only clear POI hover if we are actually leaving the point (and not hovering over bus/train)
-          if (hoverInfo && hoverInfo.id && hoverInfo.id.startsWith('poi-')) {
+          // Only clear POI/Hotspot hover if we are actually leaving the point
+          if (hoverInfo && (hoverInfo.isHotspot || (hoverInfo.id && hoverInfo.id.startsWith('poi-')))) {
             setHoverInfo(null);
           }
         }}
@@ -751,7 +762,39 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Marker>
         ))}
 
-        {hoverInfo && (
+        {hoverInfo && hoverInfo.isHotspot && (
+          <Popup
+            longitude={hoverInfo.lng}
+            latitude={hoverInfo.lat}
+            anchor="bottom"
+            offset={10}
+            closeButton={false}
+            className="poi-popup"
+            maxWidth="280px"
+          >
+            <div style={{ padding: '8px 10px', textAlign: 'left', minWidth: '180px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <span style={{
+                  fontSize: '10px', textTransform: 'uppercase', color: hoverInfo.props?.color || '#a371f7',
+                  fontWeight: '700', letterSpacing: '0.5px', padding: '2px 8px',
+                  background: `${hoverInfo.props?.color || '#a371f7'}20`, borderRadius: '4px'
+                }}>Hotspot Grid</span>
+              </div>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '6px', lineHeight: '1.3' }}>
+                Score: {Math.round(hoverInfo.props?.composite_score || 0)} ({hoverInfo.props?.score_label || 'Moderate'})
+              </div>
+              <div style={{ fontSize: '12px', color: '#d7e0d8', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Demographics:</span><span>{Math.round(hoverInfo.props?.demographics_score || 0)}/100</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Transport:</span><span>{Math.round(hoverInfo.props?.transport_score || 0)}/100</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>POI/Competition:</span><span>{Math.round(hoverInfo.props?.poi_score || 0)}/100</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Zoning:</span><span>{Math.round(hoverInfo.props?.zoning_score || 0)}/100</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Environment:</span><span>{Math.round(hoverInfo.props?.environment_score || 0)}/100</span></div>
+              </div>
+            </div>
+          </Popup>
+        )}
+
+        {hoverInfo && !hoverInfo.isHotspot && (
           <Popup
             longitude={hoverInfo.lng}
             latitude={hoverInfo.lat}
@@ -799,9 +842,9 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         )}
 
         {/* Hotspots ML GeoJSON rendering */}
-        {hotspotsData && hotspotsData.hexagons && (
-          <Source id="hotspots_src" type="geojson" data={hotspotsData.hexagons}>
-            <Layer id="hotspots_fill" type="fill" paint={{ 'fill-color': ['get', 'fill_color'], 'fill-opacity': 0.6 }} />
+        {hotspotsData && hotspotsData.features && (
+          <Source id="hotspots_src" type="geojson" data={hotspotsData}>
+            <Layer id="hotspots_fill" type="fill" paint={{ 'fill-color': ['get', 'color'], 'fill-opacity': ['get', 'fillOpacity'] }} />
             <Layer id="hotspots_line" type="line" paint={{ 'line-color': '#000', 'line-width': 1, 'line-opacity': 0.3 }} />
           </Source>
         )}

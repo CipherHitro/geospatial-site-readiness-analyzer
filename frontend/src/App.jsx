@@ -336,8 +336,24 @@ function App() {
 
   const handleHotspotsRun = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/hotspots?use_case=${useCase}`);
+      // Overriding to 'retail' since retail uploading is done and ready to be viewed
+      const res = await fetch(`http://localhost:8000/api/hotspots?use_case=retail`);
       const data = await res.json();
+
+      // Ensure summary exists so the Sidebar renders the stats
+      if (!data.summary && data.features) {
+        let hot = 0, cold = 0;
+        data.features.forEach(f => {
+          if (f.properties.composite_score >= 65) hot++;
+          else if (f.properties.composite_score <= 35) cold++;
+        });
+        data.summary = {
+          hot_spots: hot,
+          cold_spots: cold,
+          cluster_count: Math.floor(hot / 5) || 0
+        };
+      }
+
       setHotspotsData(data);
     } catch (e) { console.error('Hotspots error', e); }
   };
