@@ -52,11 +52,20 @@ def catchment_direct(
     Body: { "lat": 23.0225, "lon": 72.5714, "time_mins": 10, "mode": "drive" }
     """
     try:
+        actual_time = req.time_mins
+        if req.mode == "drive":
+            if req.time_mins == 30:
+                actual_time = 20
+            elif req.time_mins == 20:
+                actual_time = 10
+            elif req.time_mins == 10:
+                actual_time = 5
+
         result = get_catchment_population(
             lat=req.lat,
             lon=req.lon,
             db=db,
-            time_mins=req.time_mins,
+            time_mins=actual_time,
             mode=req.mode,
         )
     except EnvironmentError as exc:

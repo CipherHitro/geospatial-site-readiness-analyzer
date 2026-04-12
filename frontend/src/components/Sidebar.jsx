@@ -5,8 +5,7 @@ const layersConfig = [
   { id: 'transportation', name: 'Transportation', sub: 'Roads · Highways', color: '#c7895a' },
   { id: 'poi', name: 'Points of Interest', sub: 'Competitors · Anchors · Amenities', color: '#8a6f4e' },
   { id: 'landuse', name: 'Land Use & Zoning', sub: 'Commercial · Industrial · Residential', color: '#6f9a7a' },
-  { id: 'risk', name: 'Environmental Risk', sub: 'Flood · Industrial · Air Quality', color: '#c96a5f' },
-  { id: 'h3grid', name: 'H3 Grid Overlay', sub: 'Hexagonal cell boundaries · Ahmedabad', color: '#aab9b2' }
+  { id: 'risk', name: 'Environmental Risk', sub: 'Flood · Industrial · Air Quality', color: '#c96a5f' }
 ];
 
 export default function Sidebar({
@@ -16,9 +15,18 @@ export default function Sidebar({
   toggleLayer,
   weights,
   setWeights,
+  selectionMode,
+  onSelectionModeChange,
+  areaDrawingActive,
+  areaSelection,
+  areaDrawVertexCount,
+  onStartRedrawArea,
+  onFinishAreaPolygon,
   onHotspotsRun,
+  onHotspotsCancel,
+  isHotspotsRunning,
   onCatchmentRun,
-  onRescore,
+  onResetWeights,
   onRunAI,
   hotspotsData,
   catchmentData,
@@ -26,7 +34,7 @@ export default function Sidebar({
   activeTab,
   setActiveTab
 }) {
-  const [catchMode, setCatchMode] = useState('drive');
+  const [travelMode, setTravelMode] = useState('drive');
   const [catchBands, setCatchBands] = useState([10, 20]);
 
   const weightTotal = Object.values(weights).reduce((a, b) => a + b, 0);
@@ -70,6 +78,57 @@ export default function Sidebar({
       {/* PANELS */}
       {/* LAYERS TAB */}
       <div className={`tab-panel ${activeTab === 'layers' ? 'active' : ''}`}>
+        <div className="panel-section">
+          <h3 className="section-title"><i className="fa-solid fa-draw-polygon"></i> Site selection</h3>
+          <p className="section-desc">Score one map click, or draw a polygon to combine several H3 hex cells.</p>
+          <div className="radio-group">
+            <label className="radio-opt">
+              <input
+                type="radio"
+                name="mapSelectionMode"
+                checked={selectionMode === 'point'}
+                onChange={() => onSelectionModeChange?.('point')}
+              />
+              <span><i className="fa-solid fa-location-dot"></i> Point</span>
+            </label>
+            <label className="radio-opt">
+              <input
+                type="radio"
+                name="mapSelectionMode"
+                checked={selectionMode === 'area'}
+                onChange={() => onSelectionModeChange?.('area')}
+              />
+              <span><i className="fa-solid fa-vector-square"></i> Draw area</span>
+            </label>
+          </div>
+          {selectionMode === 'area' && areaDrawingActive && (
+            <div className="form-group" style={{ marginTop: 12 }}>
+              <p className="section-desc" style={{ marginBottom: 8 }}>
+                Corners on map: <strong>{areaDrawVertexCount}</strong> (need at least 3)
+              </p>
+              <button
+                type="button"
+                className="action-btn"
+                style={{ width: '100%' }}
+                disabled={areaDrawVertexCount < 3}
+                onClick={() => onFinishAreaPolygon?.()}
+              >
+                <i className="fa-solid fa-check"></i> Complete polygon
+              </button>
+            </div>
+          )}
+          {selectionMode === 'area' && areaSelection?.count > 0 && !areaDrawingActive && (
+            <div className="form-group" style={{ marginTop: 12 }}>
+              <p className="section-desc" style={{ marginBottom: 8 }}>
+                <strong>{areaSelection.count}</strong> H3 cells inside your shape.
+              </p>
+              <button type="button" className="action-btn action-btn--ghost" style={{ width: '100%' }} onClick={() => onStartRedrawArea?.()}>
+                <i className="fa-solid fa-rotate"></i> Redraw area
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="panel-section">
           <h3 className="section-title"><i className="fa-solid fa-database"></i> Data Layers</h3>
           <div className="layer-list">
@@ -162,8 +221,8 @@ export default function Sidebar({
               {weightTotal}%
             </span>
           </div>
-          <button className="action-btn" onClick={onRescore} style={{ marginTop: 12, width: '100%' }}>
-            <i className="fa-solid fa-rotate"></i> Re-Score Last Point
+          <button className="action-btn action-btn--ghost" onClick={onResetWeights} style={{ marginTop: 12, width: '100%' }}>
+            <i className="fa-solid fa-arrow-rotate-left"></i> Reset Weights
           </button>
         </div>
       </div>
@@ -178,11 +237,11 @@ export default function Sidebar({
             <label className="form-label">Travel Mode</label>
             <div className="radio-group">
               <label className="radio-opt">
-                <input type="radio" value="drive" checked={catchMode === 'drive'} onChange={() => setCatchMode('drive')} />
+                <input type="radio" value="drive" checked={travelMode === 'drive'} onChange={() => setTravelMode('drive')} />
                 <span><i className="fa-solid fa-car"></i> Drive</span>
               </label>
               <label className="radio-opt">
-                <input type="radio" value="walk" checked={catchMode === 'walk'} onChange={() => setCatchMode('walk')} />
+                <input type="radio" value="walk" checked={travelMode === 'walk'} onChange={() => setTravelMode('walk')} />
                 <span><i className="fa-solid fa-person-walking"></i> Walk</span>
               </label>
             </div>
@@ -206,7 +265,7 @@ export default function Sidebar({
             </div>
           </div>
 
-          <button className="action-btn" onClick={() => onCatchmentRun(catchMode, catchBands)}>
+          <button className="action-btn" onClick={() => onCatchmentRun(travelMode, catchBands)}>
             <i className="fa-solid fa-bullseye"></i> Compute Catchment
           </button>
 
@@ -236,9 +295,21 @@ export default function Sidebar({
             <i className="fa-solid fa-brain"></i> AI Site Readiness Analysis
           </button>
 
-          <button className="action-btn" onClick={onHotspotsRun}>
-            <i className="fa-solid fa-fire"></i> Run Hotspot Clustering
-          </button>
+          {isHotspotsRunning ? (
+            <button className="action-btn action-btn--ghost" onClick={onHotspotsCancel}>
+              <i className="fa-solid fa-ban"></i> Cancel Hotspot
+            </button>
+          ) : (
+            <button className="action-btn" onClick={onHotspotsRun}>
+              <i className="fa-solid fa-fire"></i> Run Hotspot Clustering
+            </button>
+          )}
+
+          {!isHotspotsRunning && hotspotsData && (
+            <button className="action-btn action-btn--ghost" onClick={onHotspotsCancel} style={{ marginTop: 8 }}>
+              <i className="fa-solid fa-xmark"></i> Clear Hotspot Grid
+            </button>
+          )}
 
           {hotspotsData && hotspotsData.summary && (
             <div className="hotspot-stats" style={{ display: 'flex', gap: 8, marginTop: 16 }}>

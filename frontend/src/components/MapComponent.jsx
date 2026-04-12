@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
-import Map, { NavigationControl, Source, Layer, Marker, Popup } from 'react-map-gl/maplibre';
+import React, { useRef, useState, useEffect, useCallback, useMemo, useImperativeHandle } from 'react';
+import Map, { NavigationControl, Source, Layer, Marker, Popup } from '@vis.gl/react-maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import SearchBox from './SearchBox';
@@ -39,7 +39,31 @@ const SATELLITE_STYLE = {
   ]
 };
 
-export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, poiDetail, environmentDetail, scoreData, mapMode, lastClicked, h3GridData, envGridData, h3CellDetail }) {
+const MapComponent = React.forwardRef(function MapComponent(props, ref) {
+  const {
+    activeLayers = {},
+    onMapClick,
+    hotspotsData,
+    catchmentData,
+    mapInfrastructure,
+    demographicsDetail,
+    zoningDetail,
+    poiDetail,
+    environmentDetail,
+    scoreData,
+    mapMode,
+    lastClicked,
+    h3GridData,
+    envGridData: _envGridData,
+    h3CellDetail,
+    selectionMode = 'point',
+    areaDrawingActive = false,
+    areaSelection = null,
+    onDrawnPolygonGeometry,
+    onSearchLocationSelect,
+    onDrawingVertexCountChange,
+  } = props;
+
   const mapRef = useRef(null);
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
   const [selectedPointHover, setSelectedPointHover] = useState(false);
@@ -58,11 +82,141 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
     pitch: 45
   });
 
-  const [layerData, setLayerData] = useState({});
+
   const [hoverInfo, setHoverInfo] = useState(null);
+  const [hoverAreaName, setHoverAreaName] = useState(null);
   const [demoHover, setDemoHover] = useState(false);
   const [zoningHover, setZoningHover] = useState(false);
   const [riskHover, setRiskHover] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    if (hoverInfo && hoverInfo.isHotspot) {
+      setHoverAreaName('Loading area...');
+      const fetchAreaName = async () => {
+        try {
+          const res = await fetch(`https://photon.komoot.io/reverse?lon=${hoverInfo.lng}&lat=${hoverInfo.lat}`);
+          const data = await res.json();
+          if (active && data.features && data.features.length > 0) {
+            const props = data.features[0].properties;
+            let name = props.district || props.city || props.name || 'Unknown Area';
+            setHoverAreaName(name);
+          } else if (active) {
+            setHoverAreaName('Unknown Area');
+          }
+        } catch (e) {
+          if (active) setHoverAreaName('Unknown Area');
+        }
+      };
+
+      const timer = setTimeout(fetchAreaName, 250); // slight debounce
+      return () => {
+        active = false;
+        clearTimeout(timer);
+      };
+    } else {
+      setHoverAreaName(null);
+    }
+  }, [hoverInfo]);
+
+  const isDrawingArea = selectionMode === 'area' && areaDrawingActive;
+  const [drawVertices, setDrawVertices] = useState([]);
+  const drawVerticesRef = useRef([]);
+
+  useEffect(() => {
+    drawVerticesRef.current = drawVertices;
+  }, [drawVertices]);
+
+  useEffect(() => {
+    if (!isDrawingArea) return;
+    const id = window.setTimeout(() => setDrawVertices([]), 0);
+    return () => window.clearTimeout(id);
+  }, [isDrawingArea]);
+
+  useEffect(() => {
+    onDrawingVertexCountChange?.(isDrawingArea ? drawVertices.length : 0);
+  }, [drawVertices.length, isDrawingArea, onDrawingVertexCountChange]);
+
+  const finishPolygonDraw = useCallback(() => {
+    const v = drawVerticesRef.current;
+    if (v.length < 3) return false;
+    const ring = [...v, v[0]];
+    onDrawnPolygonGeometry?.({ type: 'Polygon', coordinates: [ring] });
+    setDrawVertices([]);
+    return true;
+  }, [onDrawnPolygonGeometry]);
+
+  const focusPoint = useCallback((lat, lon, minZoom = null) => {
+    const map = mapRef.current?.getMap?.();
+    if (!map) return;
+    const currentZoom = map.getZoom();
+    const targetZoom = minZoom != null ? Math.max(currentZoom, minZoom) : currentZoom;
+    const verticalOffset = window.innerHeight < 800 ? -120 : -170;
+    map.easeTo({
+      center: [lon, lat],
+      zoom: targetZoom,
+      offset: [0, verticalOffset],
+      duration: 900,
+      essential: true,
+    });
+  }, []);
+
+  useImperativeHandle(ref, () => ({ finishPolygonDraw, focusPoint }), [finishPolygonDraw, focusPoint]);
+
+  const drawPreviewGeoJSON = useMemo(() => {
+    if (!isDrawingArea || drawVertices.length < 2) return null;
+    return {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: drawVertices },
+        properties: {},
+      }],
+    };
+  }, [isDrawingArea, drawVertices]);
+
+  const drawPointsGeoJSON = useMemo(() => {
+    if (!isDrawingArea || drawVertices.length === 0) return null;
+    return {
+      type: 'FeatureCollection',
+      features: drawVertices.map((c, i) => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: c },
+        properties: { idx: i },
+      })),
+    };
+  }, [isDrawingArea, drawVertices]);
+
+  const userSelectionPolygonGeoJSON = useMemo(() => {
+    if (!areaSelection?.userPolygon || isDrawingArea) return null;
+    return {
+      type: 'FeatureCollection',
+      features: [{ type: 'Feature', geometry: areaSelection.userPolygon, properties: {} }],
+    };
+  }, [areaSelection, isDrawingArea]);
+
+  /** One point per H3 cell included in the drawn area (cell center), for clear “coverage” feedback. */
+  const areaSelectionCentroidsGeoJSON = useMemo(() => {
+    const cells = areaSelection?.selected_cells;
+    if (!cells?.length || isDrawingArea) return null;
+    const features = cells
+      .map((c) => {
+        const lon = Number(c.lon);
+        const lat = Number(c.lat);
+        if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+        return {
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [lon, lat] },
+          properties: {
+            h3_index: c.h3_index,
+            population: Number(c.population) || 0,
+          },
+        };
+      })
+      .filter(Boolean);
+    if (!features.length) return null;
+    return { type: 'FeatureCollection', features };
+  }, [areaSelection?.selected_cells, isDrawingArea]);
 
   // Removed 1km circle logic
 
@@ -80,7 +234,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
   }, [lastClicked]);
 
   // Helper to create 500m circle for POI
-  const poiCircleGeoJSON = React.useMemo(() => {
+  const _poiCircleGeoJSON = React.useMemo(() => {
     if (!lastClicked || !activeLayers.poi || !poiDetail) return null;
     const points = 64;
     const coords = [];
@@ -159,30 +313,15 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
 
   const handleSearchSelect = useCallback((lat, lon) => {
     focusPointAbovePanel(lat, lon, 15);
-    // Trigger scoring automatically
-    if (onMapClick) {
+    if (onSearchLocationSelect) {
+      onSearchLocationSelect(lat, lon);
+    } else if (onMapClick) {
       onMapClick({ lat, lng: lon });
     }
-  }, [focusPointAbovePanel, onMapClick]);
+  }, [focusPointAbovePanel, onMapClick, onSearchLocationSelect]);
 
-  useEffect(() => {
-    const fetchLayer = async (name) => {
-      if (!layerData[name]) {
-        try {
-          const res = await fetch(`http://localhost:8000/api/layers/${name}`);
-          const geojson = await res.json();
-          setLayerData(prev => ({ ...prev, [name]: geojson }));
-        } catch (e) {
-          console.error(`Failed to fetch ${name}`, e);
-        }
-      }
-    };
 
-    Object.keys(activeLayers).forEach(key => {
-      if (activeLayers[key] && key !== 'h3grid') fetchLayer(key);
-    });
-  }, [activeLayers]);
-
+  /* eslint-disable react-hooks/set-state-in-effect -- sync panel visibility when map selection or layers change */
   useEffect(() => {
     setDetailPanelOpen(false);
     setSelectedPointHover(false);
@@ -195,9 +334,23 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
     }
   }, [hasActiveLayer]);
 
+  useEffect(() => {
+    if (lastClicked && (demographicsDetail || zoningDetail || environmentDetail)) {
+      setDetailPanelOpen(true);
+    }
+  }, [lastClicked, demographicsDetail, zoningDetail, environmentDetail]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   return (
-    <div className="map-container">
+    <div className={`map-container${isDrawingArea ? ' map-container--draw-area' : ''}`}>
       <SearchBox onSelect={handleSearchSelect} />
+
+      {isDrawingArea && (
+        <div className="map-draw-hint" role="status">
+          <strong>Draw an area</strong>
+          <span>Click the map to place corners (minimum 3). Then click <em>Complete polygon</em> in the sidebar.</span>
+        </div>
+      )}
 
       {hasActiveLayer && lastClicked && (demographicsDetail || zoningDetail || environmentDetail) && (
         <>
@@ -212,46 +365,83 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
 
           {detailPanelOpen && (
             <aside className="map-insight-panel">
-          {demographicsDetail && (
-            <section className="insight-section">
-              <h4 className="insight-title">Demographics</h4>
-              <div className="insight-row"><span>Area</span><strong>{demographicsDetail.neighborhood || 'N/A'}</strong></div>
-              <div className="insight-row"><span>Population</span><strong>{Number(demographicsDetail.population || 0).toLocaleString()}</strong></div>
-              {(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr) && (
-                <div className="insight-row"><span>Per Capita</span><strong>₹{Number(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr).toLocaleString()}</strong></div>
+              {demographicsDetail && (
+                <section className="insight-section">
+                  <h4 className="insight-title">Demographics</h4>
+                  <div className="insight-row"><span>Area</span><strong>{demographicsDetail.neighborhood || 'N/A'}</strong></div>
+                  <div className="insight-row"><span>Population</span><strong>{Number(demographicsDetail.population || 0).toLocaleString()}</strong></div>
+                  {(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr) && (
+                    <div className="insight-row"><span>Per Capita</span><strong>₹{Number(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr).toLocaleString()}</strong></div>
+                  )}
+                  {demographicsDetail.people_grouping && (
+                    <div className="insight-mini-list">
+                      {Object.entries(demographicsDetail.people_grouping).map(([group, pct]) => (
+                        <div key={group} className="insight-row"><span>{group.replace(/_/g, ' ')}</span><strong>{pct}%</strong></div>
+                      ))}
+                    </div>
+                  )}
+                </section>
               )}
-              {demographicsDetail.people_grouping && (
-                <div className="insight-mini-list">
-                  {Object.entries(demographicsDetail.people_grouping).map(([group, pct]) => (
-                    <div key={group} className="insight-row"><span>{group.replace(/_/g, ' ')}</span><strong>{pct}%</strong></div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
 
-          {zoningDetail && (
-            <section className="insight-section">
-              <h4 className="insight-title">Land Use</h4>
-              <div className="insight-row"><span>Zone</span><strong style={{ textTransform: 'capitalize' }}>{zoningDetail.zone_type || 'N/A'}</strong></div>
-              <div className="insight-row"><span>Commercial</span><strong>{zoningDetail.allows_commercial ? 'Allowed' : 'Not Allowed'}</strong></div>
-              <div className="insight-row"><span>Buildings</span><strong>{Number(zoningDetail.building_count_500m || 0).toLocaleString()}</strong></div>
-              <div className="insight-row"><span>Built-up Area</span><strong>{Math.round(zoningDetail.total_built_area_sqm || 0).toLocaleString()} sqm</strong></div>
-            </section>
-          )}
+              {zoningDetail && (
+                <section className="insight-section">
+                  <h4 className="insight-title">Land Use</h4>
+                  <div className="insight-row">
+                    <span>Zone</span>
+                    <strong style={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ 
+                        width: '10px', 
+                        height: '10px', 
+                        borderRadius: '2px', 
+                        backgroundColor: ZONE_COLORS[zoningDetail.zone_type?.toLowerCase()] || '#aab9b2' 
+                      }}></span>
+                      {zoningDetail.zone_type || 'N/A'}
+                    </strong>
+                  </div>
+                  <div className="insight-row"><span>Commercial</span><strong>{zoningDetail.allows_commercial ? 'Allowed' : 'Not Allowed'}</strong></div>
+                  <div className="insight-row"><span>Buildings</span><strong>{Number(zoningDetail.building_count_500m || 0).toLocaleString()}</strong></div>
+                  <div className="insight-row"><span>Built-up Area</span><strong>{Math.round(zoningDetail.total_built_area_sqm || 0).toLocaleString()} sqm</strong></div>
+                  {zoningDetail.building_distribution_500m && Object.keys(zoningDetail.building_distribution_500m).length > 0 && (
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <div style={{ marginBottom: '4px', fontWeight: 600, color: 'var(--text-main)' }}>Building Types (500m)</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {Object.entries(zoningDetail.building_distribution_500m).map(([type, count]) => (
+                          <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: BUILDING_COLORS[type.toLowerCase()] || '#aab9b2' }}></span>
+                            <span style={{ textTransform: 'capitalize' }}>{type}: {count?.count ?? count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {zoningDetail.zone_distribution_500m_pct && Object.keys(zoningDetail.zone_distribution_500m_pct).length > 0 && (
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      <div style={{ marginBottom: '4px', fontWeight: 600, color: 'var(--text-main)' }}>Area Distribution (500m)</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {Object.entries(zoningDetail.zone_distribution_500m_pct).map(([type, pct]) => (
+                          <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: ZONE_COLORS[type.toLowerCase()] || '#aab9b2' }}></span>
+                            <span style={{ textTransform: 'capitalize' }}>{type}: {Math.round(pct?.percentage ?? pct)}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </section>
+              )}
 
-          {environmentDetail && (
-            <section className="insight-section">
-              <h4 className="insight-title">Environmental Risk</h4>
-              <div className="insight-row"><span>Flood Risk</span><strong>{Number(environmentDetail.flood_score ?? environmentDetail.flood_score_raw ?? 0).toFixed(1)} / 100</strong></div>
-              {environmentDetail.aqi !== null && environmentDetail.aqi !== undefined && (
-                <div className="insight-row"><span>AQI</span><strong>{environmentDetail.aqi} ({environmentDetail.aqi_level})</strong></div>
+              {environmentDetail && (
+                <section className="insight-section">
+                  <h4 className="insight-title">Environmental Risk</h4>
+                  <div className="insight-row"><span>Flood Risk</span><strong>{Number(environmentDetail.flood_score ?? environmentDetail.flood_score_raw ?? 0).toFixed(1)} / 100</strong></div>
+                  {environmentDetail.aqi !== null && environmentDetail.aqi !== undefined && (
+                    <div className="insight-row"><span>AQI</span><strong>{environmentDetail.aqi} ({environmentDetail.aqi_level})</strong></div>
+                  )}
+                  {environmentDetail.dominant_pollutant && (
+                    <div className="insight-row"><span>Pollutant</span><strong style={{ textTransform: 'uppercase' }}>{environmentDetail.dominant_pollutant}</strong></div>
+                  )}
+                </section>
               )}
-              {environmentDetail.dominant_pollutant && (
-                <div className="insight-row"><span>Pollutant</span><strong style={{ textTransform: 'uppercase' }}>{environmentDetail.dominant_pollutant}</strong></div>
-              )}
-            </section>
-          )}
             </aside>
           )}
         </>
@@ -260,7 +450,12 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
       <Map
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
+        cursor={isDrawingArea ? 'crosshair' : undefined}
         onClick={(e) => {
+          if (isDrawingArea) {
+            setDrawVertices((prev) => [...prev, [e.lngLat.lng, e.lngLat.lat]]);
+            return;
+          }
           focusPointAbovePanel(e.lngLat.lat, e.lngLat.lng);
           onMapClick && onMapClick(e.lngLat);
         }}
@@ -349,62 +544,93 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
       >
         <NavigationControl position="bottom-right" />
 
-        {lastClicked && (
-          <Marker
-            longitude={lastClicked.lng}
-            latitude={lastClicked.lat}
-            anchor="bottom"
-          >
-            <div
-              className="selected-point-marker"
-              onMouseEnter={() => setSelectedPointHover(true)}
-              onMouseLeave={() => setSelectedPointHover(false)}
+        {lastClicked && !(
+          selectionMode === 'area' &&
+          areaSelection?.selected_cells?.length > 0 &&
+          !isDrawingArea
+        ) && (
+            <Marker
+              longitude={lastClicked.lng}
+              latitude={lastClicked.lat}
+              anchor="bottom"
             >
-              <i className="fa-solid fa-location-dot"></i>
-            </div>
-          </Marker>
-        )}
-
-        {hasActiveLayer && lastClicked && selectedPointHover && (demographicsDetail || zoningDetail || environmentDetail) && (
-          <Popup
-            longitude={lastClicked.lng}
-            latitude={lastClicked.lat}
-            anchor="top"
-            offset={24}
-            closeButton={false}
-            className="selected-point-popup"
-          >
-            <div className="demo-popup-content">
-              <div className="demo-popup-header">Selected Point</div>
-              <div className="demo-popup-body">
-                {demographicsDetail && (
-                  <div className="demo-popup-row">
-                    <span className="demo-popup-label">Population:</span>
-                    <span className="demo-popup-value">{Number(demographicsDetail.population || 0).toLocaleString()}</span>
-                  </div>
-                )}
-                {zoningDetail && (
-                  <div className="demo-popup-row">
-                    <span className="demo-popup-label">Zone:</span>
-                    <span className="demo-popup-value" style={{ textTransform: 'capitalize' }}>{zoningDetail.zone_type || 'N/A'}</span>
-                  </div>
-                )}
-                {environmentDetail && (
-                  <div className="demo-popup-row">
-                    <span className="demo-popup-label">Flood Risk:</span>
-                    <span className="demo-popup-value">{Number(environmentDetail.flood_score ?? environmentDetail.flood_score_raw ?? 0).toFixed(1)} / 100</span>
-                  </div>
-                )}
-                {environmentDetail && (environmentDetail.aqi !== null && environmentDetail.aqi !== undefined) && (
-                  <div className="demo-popup-row">
-                    <span className="demo-popup-label">AQI:</span>
-                    <span className="demo-popup-value">{environmentDetail.aqi}</span>
-                  </div>
-                )}
+              <div
+                className="selected-point-marker"
+                onMouseEnter={() => setSelectedPointHover(true)}
+                onMouseLeave={() => setSelectedPointHover(false)}
+              >
+                <i className="fa-solid fa-location-dot"></i>
               </div>
-            </div>
-          </Popup>
-        )}
+            </Marker>
+          )}
+
+        {hasActiveLayer && lastClicked && selectedPointHover && (demographicsDetail || zoningDetail || environmentDetail) && !(
+          selectionMode === 'area' &&
+          areaSelection?.selected_cells?.length > 0 &&
+          !isDrawingArea
+        ) && (
+            <Popup
+              longitude={lastClicked.lng}
+              latitude={lastClicked.lat}
+              anchor="top"
+              offset={24}
+              closeButton={false}
+              className="selected-point-popup"
+            >
+              <div className="demo-popup-content">
+                <div className="demo-popup-header">Selected Point</div>
+                <div className="demo-popup-body">
+                  {demographicsDetail && (
+                    <div className="demo-popup-row">
+                      <span className="demo-popup-label">Population:</span>
+                      <span className="demo-popup-value">{Number(demographicsDetail.population || 0).toLocaleString()}</span>
+                    </div>
+                  )}
+                  {zoningDetail && (
+                    <>
+                      <div className="demo-popup-row">
+                        <span className="demo-popup-label">Zone:</span>
+                        <span className="demo-popup-value" style={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ 
+                            width: '12px', 
+                            height: '12px', 
+                            borderRadius: '3px', 
+                            backgroundColor: ZONE_COLORS[zoningDetail.zone_type?.toLowerCase()] || '#aab9b2' 
+                          }}></span>
+                          {zoningDetail.zone_type || 'N/A'}
+                        </span>
+                      </div>
+                      {zoningDetail.building_distribution_500m && Object.keys(zoningDetail.building_distribution_500m).length > 0 && (
+                        <div className="demo-popup-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px', marginTop: '6px' }}>
+                          <span className="demo-popup-label">Buildings Nearby:</span>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', fontSize: '11px', marginTop: '2px' }}>
+                            {Object.entries(zoningDetail.building_distribution_500m).map(([type, count]) => (
+                              <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: BUILDING_COLORS[type.toLowerCase()] || '#aab9b2' }}></span>
+                                <span style={{ textTransform: 'capitalize', color: 'var(--text-muted)' }}>{type}: {count?.count ?? count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {environmentDetail && (
+                    <div className="demo-popup-row">
+                      <span className="demo-popup-label">Flood Risk:</span>
+                      <span className="demo-popup-value">{Number(environmentDetail.flood_score ?? environmentDetail.flood_score_raw ?? 0).toFixed(1)} / 100</span>
+                    </div>
+                  )}
+                  {environmentDetail && (environmentDetail.aqi !== null && environmentDetail.aqi !== undefined) && (
+                    <div className="demo-popup-row">
+                      <span className="demo-popup-label">AQI:</span>
+                      <span className="demo-popup-value">{environmentDetail.aqi}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Popup>
+          )}
 
         {/* ── H3 GRID OVERLAY (toggle-able) ── */}
         {activeLayers.h3grid && h3GridData && (
@@ -520,26 +746,26 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
 
                 return (
                   <>
-              <div className="zoning-popup-header">
-                <span>Environmental Risk</span>
-                <span className={`zoning-badge ${isHighRisk ? 'zoning-badge--no' : 'zoning-badge--ok'}`}>
-                  {isHighRisk ? 'High Risk' : 'Low Risk'}
-                </span>
-              </div>
-              <div className="demo-popup-body">
-                {(environmentDetail.flood_score !== undefined || environmentDetail.flood_score_raw !== undefined) && (
-                  <div className="demo-popup-row">
-                    <span className="demo-popup-label">Flood Risk Score:</span>
-                    <span className="demo-popup-value">{floodRisk.toFixed(1)} / 100</span>
-                  </div>
-                )}
-                {environmentDetail.aqi !== null && environmentDetail.aqi !== undefined && (
-                  <div className="demo-popup-row">
-                    <span className="demo-popup-label">Live AQI:</span>
-                    <span className="demo-popup-value">{environmentDetail.aqi}</span>
-                  </div>
-                )}
-              </div>
+                    <div className="zoning-popup-header">
+                      <span>Environmental Risk</span>
+                      <span className={`zoning-badge ${isHighRisk ? 'zoning-badge--no' : 'zoning-badge--ok'}`}>
+                        {isHighRisk ? 'High Risk' : 'Low Risk'}
+                      </span>
+                    </div>
+                    <div className="demo-popup-body">
+                      {(environmentDetail.flood_score !== undefined || environmentDetail.flood_score_raw !== undefined) && (
+                        <div className="demo-popup-row">
+                          <span className="demo-popup-label">Flood Risk Score:</span>
+                          <span className="demo-popup-value">{floodRisk.toFixed(1)} / 100</span>
+                        </div>
+                      )}
+                      {environmentDetail.aqi !== null && environmentDetail.aqi !== undefined && (
+                        <div className="demo-popup-row">
+                          <span className="demo-popup-label">Live AQI:</span>
+                          <span className="demo-popup-value">{environmentDetail.aqi}</span>
+                        </div>
+                      )}
+                    </div>
                   </>
                 );
               })()}
@@ -780,8 +1006,12 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                   background: `${hoverInfo.props?.color || '#a371f7'}20`, borderRadius: '4px'
                 }}>Hotspot Grid</span>
               </div>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '6px', lineHeight: '1.3' }}>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '2px', lineHeight: '1.3' }}>
                 Score: {Math.round(hoverInfo.props?.composite_score || 0)} ({hoverInfo.props?.score_label || 'Moderate'})
+              </div>
+              <div style={{ fontSize: '11px', color: '#8b949e', marginBottom: '8px', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <i className="fa-solid fa-location-dot"></i>
+                {hoverAreaName || 'Loading...'}
               </div>
               <div style={{ fontSize: '12px', color: '#d7e0d8', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Demographics:</span><span>{Math.round(hoverInfo.props?.demographics_score || 0)}/100</span></div>
@@ -851,45 +1081,8 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
 
         {/* GEOSPATIAL DATA LAYERS */}
 
-        {activeLayers.demographics && layerData.demographics && (
-          <Source id="src_demographics" type="geojson" data={layerData.demographics}>
-            <Layer id="layer_demographics" type="fill" paint={{ 'fill-color': '#d9b15b', 'fill-opacity': 0.3 }} />
-          </Source>
-        )}
 
-        {activeLayers.transportation && layerData.transportation && (
-          <Source id="src_transportation" type="geojson" data={layerData.transportation}>
-            <Layer id="layer_transportation" type="line" paint={{ 'line-color': '#c7895a', 'line-width': 2 }} />
-          </Source>
-        )}
 
-        {activeLayers.landuse && layerData.landuse && (
-          <Source id="src_landuse" type="geojson" data={layerData.landuse}>
-            <Layer id="layer_landuse" type="fill" paint={{ 'fill-color': '#6f9a7a', 'fill-opacity': 0.4 }} />
-          </Source>
-        )}
-
-        {activeLayers.risk && layerData.risk && (
-          <Source id="src_risk" type="geojson" data={layerData.risk}>
-            <Layer id="layer_risk" type="fill" paint={{ 'fill-color': '#c96a5f', 'fill-opacity': 0.4 }} />
-          </Source>
-        )}
-
-        {activeLayers.poi && layerData.poi && (
-          <Source id="src_poi" type="geojson" data={layerData.poi}>
-            <Layer id="layer_poi" type="circle" paint={{
-              'circle-color': [
-                'match',
-                ['get', 'category'],
-                'competitor', '#c96a5f',
-                'anchor', '#d9b15b',
-                'complementary', '#6f9a7a',
-                '#c7895a'
-              ],
-              'circle-radius': 4
-            }} />
-          </Source>
-        )}
 
         {/* DYNAMIC POI LAYER (Use-case specific) */}
         {activeLayers.poi && poiDetail && poiDetail.features && (
@@ -903,7 +1096,56 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
+        {/* USER-DEFINED AREA — rendered last so hexes / polygon sit above base data layers */}
+        {userSelectionPolygonGeoJSON && (
+          <Source id="user_drawn_polygon" type="geojson" data={userSelectionPolygonGeoJSON}>
+            <Layer id="user_drawn_polygon_fill" type="fill" paint={{ 'fill-color': '#58a6ff', 'fill-opacity': 0.14 }} />
+            <Layer id="user_drawn_polygon_line" type="line" paint={{ 'line-color': '#58a6ff', 'line-width': 2.5, 'line-dasharray': [2, 2] }} />
+          </Source>
+        )}
+        {areaSelection?.hexGeojson && areaSelection.hexGeojson.features?.length > 0 && (
+          <Source id="area_hex_overlay" type="geojson" data={areaSelection.hexGeojson}>
+            <Layer id="area_hex_fill" type="fill" paint={{ 'fill-color': '#a371f7', 'fill-opacity': 0.42 }} />
+            <Layer id="area_hex_line" type="line" paint={{ 'line-color': '#c4a5f5', 'line-width': 2 }} />
+          </Source>
+        )}
+        {areaSelectionCentroidsGeoJSON && (
+          <Source id="area_selection_centroids" type="geojson" data={areaSelectionCentroidsGeoJSON}>
+            <Layer
+              id="area_selection_centroids_circle"
+              type="circle"
+              paint={{
+                'circle-radius': 5,
+                'circle-color': '#f0f6fc',
+                'circle-opacity': 0.95,
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#a371f7',
+              }}
+            />
+          </Source>
+        )}
+        {drawPreviewGeoJSON && (
+          <Source id="draw_preview_line" type="geojson" data={drawPreviewGeoJSON}>
+            <Layer id="draw_preview_line_layer" type="line" paint={{ 'line-color': '#d9b15b', 'line-width': 3 }} />
+          </Source>
+        )}
+        {drawPointsGeoJSON && (
+          <Source id="draw_vertex_points" type="geojson" data={drawPointsGeoJSON}>
+            <Layer
+              id="draw_vertices_circle"
+              type="circle"
+              paint={{
+                'circle-radius': 6,
+                'circle-color': '#d9b15b',
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#ffffff',
+              }}
+            />
+          </Source>
+        )}
       </Map>
     </div>
   );
-}
+});
+
+export default MapComponent;

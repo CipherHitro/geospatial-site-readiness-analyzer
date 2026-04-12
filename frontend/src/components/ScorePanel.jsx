@@ -111,7 +111,7 @@ function StackedBar({ items }) {
   );
 }
 
-export default function ScorePanel({ scoreData, demographicsDetail, isVisible = true, onClose, onToggle, onCompareAdd }) {
+export default function ScorePanel({ scoreData, demographicsDetail, isVisible = true, onToggle, onCompareAdd }) {
   const hasData = scoreData !== null && scoreData !== undefined;
   const isOpen = hasData && isVisible;
   const demo = scoreData?.demographics || demographicsDetail;
@@ -187,7 +187,9 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
             <i className="fa-solid fa-location-pin" />
             <span>
               {scoreData
-                ? `${Number(scoreData.lat).toFixed(4)}, ${Number(scoreData.lng).toFixed(4)}`
+                ? (scoreData.selectionKind === 'area' && scoreData.hex_count
+                  ? `Area · ${scoreData.hex_count} H3 cells @ ${Number(scoreData.lat).toFixed(4)}, ${Number(scoreData.lng).toFixed(4)}`
+                  : `${Number(scoreData.lat).toFixed(4)}, ${Number(scoreData.lng).toFixed(4)}`)
                 : 'Site Analysis'}
             </span>
             {scoreData?.constraint_failures?.length > 0 && (
@@ -202,9 +204,7 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
             )}
           </div>
           <div className="score-panel__actions">
-            <button className="pill-btn" onClick={() => onCompareAdd && onCompareAdd(scoreData)}>
-              <i className="fa-solid fa-code-compare" /> Compare
-            </button>
+            
           </div>
         </div>
 

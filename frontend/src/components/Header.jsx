@@ -25,15 +25,6 @@ export default function Header({ onCompareOpen, useCase, onUseCaseChange, mapMod
         <button className={`icon-btn ${mapMode === 'satellite' ? 'active' : ''}`} title="Toggle Satellite Map" onClick={onMapModeToggle}>
           <i className="fa-solid fa-earth-asia"></i>
         </button>
-        <button className="icon-btn" title="Run Hotspot Analysis" onClick={onHotspotsRun}>
-          <i className="fa-solid fa-fire"></i>
-        </button>
-        <button className="icon-btn" title="Compare Sites" onClick={onCompareOpen}>
-          <i className="fa-solid fa-code-compare"></i>
-        </button>
-        <button className="icon-btn" title="Toggle Sidebar" onClick={onSidebarToggle}>
-          <i className="fa-solid fa-sidebar"></i>
-        </button> 
       </div>
     </header>
   );

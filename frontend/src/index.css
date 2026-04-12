@@ -292,6 +292,28 @@ html, body {
 
 /* MAP */
 .map-container { flex: 1; width: 100%; position: relative; overflow: hidden; background: var(--bg);}
+.map-container--draw-area { cursor: crosshair; }
+.map-draw-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 100px;
+  transform: translateX(-50%);
+  z-index: 600;
+  max-width: min(420px, calc(100% - 32px));
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--overlay-bg-strong, rgba(22, 27, 34, 0.92));
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.45;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  text-align: center;
+}
+.map-draw-hint strong { display: block; margin-bottom: 4px; color: var(--accent); font-size: 13px; }
+.map-draw-hint span { color: var(--text-muted); }
+.map-draw-hint em { color: var(--text); font-style: normal; font-weight: 600; }
 .map-insight-panel {
   position: absolute;
   top: 12px;

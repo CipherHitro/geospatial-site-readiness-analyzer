@@ -5,22 +5,110 @@ import MapComponent from './components/MapComponent';
 import ScorePanel from './components/ScorePanel';
 import CompareModal from './components/CompareModal';
 
+/** First ring centroid (GeoJSON lng/lat). */
+function polygonCentroid(geometry) {
+  if (!geometry?.coordinates) return { lat: 23.0225, lng: 72.5714 };
+  const ringCentroid = (ring) => {
+    const closed = ring.length > 1
+      && ring[0][0] === ring[ring.length - 1][0]
+      && ring[0][1] === ring[ring.length - 1][1];
+    const n = closed ? ring.length - 1 : ring.length;
+    if (n <= 0) return { lat: 23.0225, lng: 72.5714 };
+    let sx = 0;
+    let sy = 0;
+    for (let i = 0; i < n; i++) {
+      sx += ring[i][0];
+      sy += ring[i][1];
+    }
+    return { lng: sx / n, lat: sy / n };
+  };
+  if (geometry.type === 'Polygon') return ringCentroid(geometry.coordinates[0]);
+  if (geometry.type === 'MultiPolygon') {
+    let best = null;
+    let bestA = -1;
+    for (const poly of geometry.coordinates) {
+      const ring = poly[0];
+      let a = 0;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        a += ring[j][0] * ring[i][1] - ring[i][0] * ring[j][1];
+      }
+      a = Math.abs(a / 2);
+      if (a > bestA) {
+        bestA = a;
+        best = poly;
+      }
+    }
+    return best ? ringCentroid(best[0]) : { lat: 23.0225, lng: 72.5714 };
+  }
+  return { lat: 23.0225, lng: 72.5714 };
+}
+
+function aggregateSelectedCells(cells) {
+  if (!cells?.length) return null;
+  const keys = ['child_0_18', 'youth_19_25', 'adult_26_45', 'senior_46_60', 'senior_citizen_60plus'];
+  const sums = Object.fromEntries(keys.map((k) => [k, 0]));
+  let pop = 0;
+  let incW = 0;
+  let wLat = 0;
+  let wLng = 0;
+  for (const c of cells) {
+    const p = Number(c.population) || 0;
+    pop += p;
+    for (const k of keys) sums[k] += Number(c[k]) || 0;
+    incW += (Number(c.est_per_capita_inr) || 0) * p;
+    wLat += (Number(c.lat) || 0) * p;
+    wLng += (Number(c.lon) || 0) * p;
+  }
+  const totalAge = keys.reduce((a, k) => a + sums[k], 0);
+  const pct = (k) => (totalAge > 0 ? Math.round((sums[k] / totalAge) * 1000) / 10 : 0);
+  const centerLat = pop > 0 ? wLat / pop : Number(cells[0].lat) || 0;
+  const centerLng = pop > 0 ? wLng / pop : Number(cells[0].lon) || 0;
+  return {
+    h3_index: `area:${cells.length}_cells`,
+    population: pop,
+    lat: centerLat,
+    lon: centerLng,
+    age_distribution_pct: {
+      child_0_18: pct('child_0_18'),
+      youth_19_25: pct('youth_19_25'),
+      adult_26_45: pct('adult_26_45'),
+      senior_46_60: pct('senior_46_60'),
+      senior_citizen_60plus: pct('senior_citizen_60plus'),
+    },
+    est_per_capita_inr: pop > 0 ? incW / pop : 0,
+    geometry: null,
+    is_area_aggregate: true,
+    hex_count: cells.length,
+  };
+}
+
 function App() {
   const [mapMode, setMapMode] = useState('standard');
   const [useCase, setUseCase] = useState('retail');
   const [presets, setPresets] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const [activeLayers, setActiveLayers] = useState({ demographics: true });
+  const [activeLayers, setActiveLayers] = useState({ demographics: false, transportation: false, competition: false, landuse: false, risk: false });
   const [weights, setWeights] = useState({
     demographics: 25, transportation: 20, competition: 20, landuse: 20, risk: 15
   });
 
   const [lastClicked, setLastClicked] = useState(null);
+  /** 'point' = map click scoring; 'area' = draw polygon then score at polygon centroid with hex overlay */
+  const [selectionMode, setSelectionMode] = useState('point');
+  /** While true, map shows polygon draw tool (only when selectionMode === 'area'). */
+  const [areaDrawingActive, setAreaDrawingActive] = useState(false);
+  /** Last drawn area: user polygon + highlighted hexes from API */
+  const [areaSelection, setAreaSelection] = useState(null);
+  const [areaDrawVertexCount, setAreaDrawVertexCount] = useState(0);
+  const mapComponentRef = React.useRef(null);
+
   const [scoreData, setScoreData] = useState(null);
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [hotspotsData, setHotspotsData] = useState(null);
+  const [isHotspotsRunning, setIsHotspotsRunning] = useState(false);
   const [catchmentData, setCatchmentData] = useState(null);
+  const hotspotAbortRef = React.useRef(null);
 
   const [savedSites, setSavedSites] = useState([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
@@ -34,6 +122,10 @@ function App() {
   // ── H3 Grid State ──────────────────────────────────────────
   const [h3GridData, setH3GridData] = useState(null);
   const [h3CellDetail, setH3CellDetail] = useState(null);
+
+  const selectionRef = React.useRef({ selectionMode, areaSelection, lastClicked });
+  // eslint-disable-next-line react-hooks/refs
+  selectionRef.current = { selectionMode, areaSelection, lastClicked };
 
   useEffect(() => {
     fetch('http://localhost:8000/api/score/presets')
@@ -51,25 +143,6 @@ function App() {
         .catch(e => console.error('H3 Grid fetch error', e));
     }
   }, [activeLayers.h3grid]);
-
-  const isInitialMount = React.useRef(true);
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-    } else if (lastClicked) {
-      handleMapClick(lastClicked, true);
-    }
-  }, [activeLayers]);
-
-  // Re-fetch all active layer data when the use case changes
-  const isFirstUseCase = React.useRef(true);
-  useEffect(() => {
-    if (isFirstUseCase.current) {
-      isFirstUseCase.current = false;
-    } else if (lastClicked) {
-      handleMapClick(lastClicked);
-    }
-  }, [useCase]);
 
   const handleUseCaseChange = (uc) => {
     setUseCase(uc);
@@ -92,12 +165,16 @@ function App() {
 
   const toggleLayer = (layerId) => setActiveLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
 
-  const handleMapClick = async (lngLat, isRefresh = false) => {
+  const handleMapClick = async (lngLat, isRefresh = false, options = {}) => {
     const total = Object.values(weights).reduce((a, b) => a + b, 0);
     if (total !== 100) {
       alert("Weights must sum exactly to 100% before scoring.");
       return;
     }
+
+    if (!options.presetH3CellDetail) setAreaSelection(null);
+
+    const effectiveLayers = options.activeLayersOverride || activeLayers;
 
     setLastClicked(lngLat);
     if (!isRefresh) {
@@ -106,7 +183,7 @@ function App() {
       setMapInfrastructure(null);
       setPoiDetail(null);
       setEnvironmentDetail(null);
-      setH3CellDetail(null);
+      if (!options.presetH3CellDetail) setH3CellDetail(null);
     }
 
     let newScoreData = {
@@ -116,30 +193,36 @@ function App() {
       grade: 'C',
       breakdown: {},
       recommendations: [],
-      constraint_failures: []
+      constraint_failures: [],
+      selectionKind: options.selectionKind || 'point',
+      hex_count: options.hexCount ?? null
     };
 
     const fetchPromises = [];
 
-    // ── H3 Cell Lookup (always runs — invisible data source) ──
-    const h3Promise = fetch('http://localhost:8000/api/h3/cell', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
-    })
-      .then(res => {
-        if (res.ok) return res.json();
-        return null;
+    // ── H3 cell: single-point lookup, or preset aggregate for drawn areas ──
+    if (options.presetH3CellDetail) {
+      setH3CellDetail(options.presetH3CellDetail);
+    } else {
+      const h3Promise = fetch('http://localhost:8000/api/h3/cell', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
       })
-      .then(data => {
-        if (data) setH3CellDetail(data);
-      })
-      .catch(e => console.warn('H3 cell lookup failed', e));
+        .then(res => {
+          if (res.ok) return res.json();
+          return null;
+        })
+        .then(data => {
+          if (data) setH3CellDetail(data);
+        })
+        .catch(e => console.warn('H3 cell lookup failed', e));
 
-    fetchPromises.push(h3Promise);
+      fetchPromises.push(h3Promise);
+    }
 
     // Demographic Layer
-    if (activeLayers.demographics) {
+    if (effectiveLayers.demographics) {
       const demoPromise = fetch('http://localhost:8000/api/demographics/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -173,7 +256,7 @@ function App() {
     }
 
     // Transportation Layer
-    if (activeLayers.transportation) {
+    if (effectiveLayers.transportation) {
       fetchPromises.push(
         fetch('http://localhost:8000/api/transport/score', {
           method: 'POST',
@@ -205,7 +288,7 @@ function App() {
     }
 
     // Zoning / Land Use Layer
-    if (activeLayers.landuse) {
+    if (effectiveLayers.landuse) {
       fetchPromises.push(
         fetch('http://localhost:8000/api/zoning/score', {
           method: 'POST',
@@ -224,7 +307,7 @@ function App() {
     }
 
     // POI / Competition Layer
-    if (activeLayers.poi) {
+    if (effectiveLayers.poi) {
       fetchPromises.push(
         fetch('http://localhost:8000/api/poi/score', {
           method: 'POST',
@@ -243,7 +326,7 @@ function App() {
     }
 
     // Environmental Risk Layer (AQI + Flood)
-    if (activeLayers.risk) {
+    if (effectiveLayers.risk) {
       fetchPromises.push(
         fetch('http://localhost:8000/api/environment/score', {
           method: 'POST',
@@ -282,14 +365,134 @@ function App() {
       setScoreData(newScoreData);
       setIsPanelVisible(true);
       setCatchmentData(null);
+    } else {
+      setIsPanelVisible(false);
+      setScoreData(null);
     }
+  };
+
+  const isInitialMount = React.useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    const { selectionMode: sm, areaSelection: ar, lastClicked: lc } = selectionRef.current;
+    if (!lc) return;
+    if (sm === 'area' && ar?.selected_cells?.length) {
+      handleMapClick(polygonCentroid(ar.userPolygon), true, {
+        presetH3CellDetail: aggregateSelectedCells(ar.selected_cells),
+        selectionKind: 'area',
+        hexCount: ar.count
+      });
+    } else if (sm === 'point') {
+      handleMapClick(lc, true);
+    }
+  }, [activeLayers]);
+
+  const isFirstUseCase = React.useRef(true);
+  useEffect(() => {
+    if (isFirstUseCase.current) {
+      isFirstUseCase.current = false;
+      return;
+    }
+
+    if (hotspotsData) {
+      handleHotspotsRun(); // Re-run hotspot generation automatically when use_case changes
+    }
+
+    const { selectionMode: sm, areaSelection: ar, lastClicked: lc } = selectionRef.current;
+    if (!lc) return;
+    if (sm === 'area' && ar?.selected_cells?.length) {
+      handleMapClick(polygonCentroid(ar.userPolygon), false, {
+        presetH3CellDetail: aggregateSelectedCells(ar.selected_cells),
+        selectionKind: 'area',
+        hexCount: ar.count
+      });
+    } else if (sm === 'point') {
+      handleMapClick(lc);
+    }
+  }, [useCase]);
+
+  const handleSelectionModeChange = (mode) => {
+    setSelectionMode(mode);
+    if (mode === 'point') {
+      setAreaDrawingActive(false);
+      setAreaSelection(null);
+    } else {
+      setAreaSelection(null);
+      setAreaDrawingActive(true);
+      setLastClicked(null);
+      setScoreData(null);
+      setH3CellDetail(null);
+    }
+  };
+
+  const handleStartRedrawArea = () => {
+    setAreaSelection(null);
+    setAreaDrawingActive(true);
+  };
+
+  const handleFinishAreaPolygon = () => {
+    const ok = mapComponentRef.current?.finishPolygonDraw?.();
+    if (!ok) {
+      alert('Place at least 3 corners on the map first, then click Complete polygon.');
+    }
+  };
+
+  const handleDrawnPolygonGeometry = async (polygonGeometry) => {
+    setAreaDrawingActive(false);
+    try {
+      const res = await fetch('http://localhost:8000/api/environment/select-area', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(polygonGeometry)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || `Area selection failed (${res.status})`);
+        setAreaDrawingActive(true);
+        return;
+      }
+      const data = await res.json();
+      const count = data.count ?? (data.selected_hexagons?.length || 0);
+      if (!count) {
+        alert('No H3 cells are at least 50% inside that shape (try a larger area or move within Ahmedabad coverage).');
+        setAreaDrawingActive(true);
+        return;
+      }
+      const centroid = polygonCentroid(polygonGeometry);
+      const preset = aggregateSelectedCells(data.selected_cells || []);
+      setAreaSelection({
+        userPolygon: polygonGeometry,
+        hexGeojson: data.hexagons_geojson,
+        count,
+        selected_cells: data.selected_cells || []
+      });
+      await handleMapClick(centroid, false, {
+        presetH3CellDetail: preset,
+        selectionKind: 'area',
+        hexCount: count
+      });
+    } catch (e) {
+      console.error('select-area', e);
+      alert('Could not analyze drawn area. Is the API running?');
+      setAreaDrawingActive(true);
+    }
+  };
+
+  const handleSearchLocationSelect = (lat, lon) => {
+    setSelectionMode('point');
+    setAreaDrawingActive(false);
+    setAreaSelection(null);
+    handleMapClick({ lat, lng: lon });
   };
 
   const [sidebarTab, setSidebarTab] = useState('layers');
 
   const handleRunOrchestrator = async () => {
     if (!lastClicked) {
-      alert("Please select a point on the map first!");
+      alert("Please select a location on the map (point or drawn area) first!");
       return;
     }
 
@@ -335,9 +538,12 @@ function App() {
   };
 
   const handleHotspotsRun = async () => {
+    if (isHotspotsRunning) return;
+    const controller = new AbortController();
+    hotspotAbortRef.current = controller;
+    setIsHotspotsRunning(true);
     try {
-      // Overriding to 'retail' since retail uploading is done and ready to be viewed
-      const res = await fetch(`http://localhost:8000/api/hotspots?use_case=retail`);
+      const res = await fetch(`http://localhost:8000/api/hotspots?use_case=${useCase}`, { signal: controller.signal });
       const data = await res.json();
 
       // Ensure summary exists so the Sidebar renders the stats
@@ -355,14 +561,28 @@ function App() {
       }
 
       setHotspotsData(data);
-    } catch (e) { console.error('Hotspots error', e); }
+    } catch (e) {
+      if (e.name !== 'AbortError') console.error('Hotspots error', e);
+    } finally {
+      hotspotAbortRef.current = null;
+      setIsHotspotsRunning(false);
+    }
+  };
+
+  const handleCancelHotspots = () => {
+    if (hotspotAbortRef.current) {
+      hotspotAbortRef.current.abort();
+      hotspotAbortRef.current = null;
+    }
+    setIsHotspotsRunning(false);
+    setHotspotsData(null);
   };
 
   const CATCHMENT_COLORS = { 10: '#4ade80', 20: '#fbbf24', 30: '#f87171' };
 
   const handleCatchmentRun = async (mode, bands) => {
     if (!lastClicked) {
-      alert("Please click a location on the map first!");
+      alert("Please select a location on the map first (point or area centroid)!");
       return;
     }
 
@@ -431,9 +651,31 @@ function App() {
           toggleLayer={toggleLayer}
           weights={weights}
           setWeights={setWeights}
+          selectionMode={selectionMode}
+          onSelectionModeChange={handleSelectionModeChange}
+          areaDrawingActive={areaDrawingActive}
+          areaSelection={areaSelection}
+          areaDrawVertexCount={areaDrawVertexCount}
+          onStartRedrawArea={handleStartRedrawArea}
+          onFinishAreaPolygon={handleFinishAreaPolygon}
           onHotspotsRun={handleHotspotsRun}
+          onHotspotsCancel={handleCancelHotspots}
+          isHotspotsRunning={isHotspotsRunning}
           onCatchmentRun={handleCatchmentRun}
-          onRescore={() => lastClicked ? handleMapClick(lastClicked) : alert("Click a point first")}
+            onResetWeights={() => {
+              if (presets[useCase]) {
+                const w = presets[useCase].weights;
+                setWeights({
+                  demographics: Math.round(w.demographics * 100),
+                  transportation: Math.round(w.transportation * 100),
+                  competition: Math.round(w.competition * 100),
+                  landuse: Math.round(w.landuse * 100),
+                  risk: Math.round(w.risk * 100)
+                });
+              } else {
+                setWeights({ demographics: 25, transportation: 20, competition: 20, landuse: 20, risk: 15 });
+              }
+            }}
           onRunAI={handleRunOrchestrator}
           hotspotsData={hotspotsData}
           catchmentData={catchmentData}
@@ -443,8 +685,15 @@ function App() {
         />
         <div className="map-area">
           <MapComponent
+            ref={mapComponentRef}
             activeLayers={activeLayers}
+            selectionMode={selectionMode}
+            areaDrawingActive={areaDrawingActive}
+            areaSelection={areaSelection}
             onMapClick={handleMapClick}
+            onDrawnPolygonGeometry={handleDrawnPolygonGeometry}
+            onSearchLocationSelect={handleSearchLocationSelect}
+            onDrawingVertexCountChange={setAreaDrawVertexCount}
             hotspotsData={hotspotsData}
             catchmentData={catchmentData}
             mapInfrastructure={mapInfrastructure}
@@ -463,7 +712,6 @@ function App() {
             scoreData={scoreData}
             demographicsDetail={demographicsDetail}
             isVisible={isPanelVisible}
-            onClose={() => setScoreData(null)}
             onToggle={() => setIsPanelVisible(v => !v)}
             onCompareAdd={handleCompareAdd}
           />
