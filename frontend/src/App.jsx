@@ -88,6 +88,21 @@ function App() {
     }
   };
 
+  const restoreDefaultWeights = () => {
+    if (presets[useCase]) {
+      const w = presets[useCase].weights;
+      setWeights({
+        demographics: Math.round(w.demographics * 100),
+        transportation: Math.round(w.transportation * 100),
+        competition: Math.round(w.competition * 100),
+        landuse: Math.round(w.landuse * 100),
+        risk: Math.round(w.risk * 100)
+      });
+    } else {
+      setWeights({ demographics: 25, transportation: 20, competition: 20, landuse: 20, risk: 15 });
+    }
+  };
+
   const handleCompareAdd = (data) => {
     setSavedSites(prev => [...prev, { name: `Site ${prev.length + 1}`, ...data }]);
     setIsCompareOpen(true);
@@ -355,6 +370,7 @@ function App() {
           onRescore={() => lastClicked ? handleMapClick(lastClicked) : alert("Click a point first")}
           hotspotsData={hotspotsData}
           catchmentData={catchmentData}
+          onRestoreDefaultWeights={restoreDefaultWeights}
         />
         <MapComponent
           activeLayers={activeLayers}

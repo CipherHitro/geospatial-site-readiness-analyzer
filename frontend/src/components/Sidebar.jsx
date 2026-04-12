@@ -10,7 +10,7 @@ const layersConfig = [
 ];
 
 export default function Sidebar({
-  activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData
+  activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData, onRestoreDefaultWeights
 }) {
   const [activeTab, setActiveTab] = useState('layers');
   const [catchMode, setCatchMode] = useState('drive');
@@ -139,9 +139,15 @@ export default function Sidebar({
               {weightTotal}%
             </span>
           </div>
-          <button className="action-btn" onClick={onRescore} style={{ marginTop: 12, width: '100%' }}>
-            <i className="fa-solid fa-rotate"></i> Re-Score Last Point
-          </button>
+
+          <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+            <button className="action-btn" onClick={onRestoreDefaultWeights} style={{ flex: 1, background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+              Reset Defaults
+            </button>
+            <button className="action-btn" onClick={onRescore} style={{ flex: '1.5' }}>
+              <i className="fa-solid fa-rotate"></i> Re-Score Point
+            </button>
+          </div>
         </div>
       </div>
 
