@@ -10,7 +10,7 @@ const layersConfig = [
 ];
 
 export default function Sidebar({
-  isOpen, onToggle, activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData, visitedHistory, onDeleteHistory
+  isOpen, onToggle, activeLayers, toggleLayer, weights, setWeights, onHotspotsRun, onCatchmentRun, onRescore, hotspotsData, catchmentData, visitedHistory, onDeleteHistory, onCompareOpen
 }) {
   const [activeTab, setActiveTab] = useState('layers');
   const [catchMode, setCatchMode] = useState('drive');
@@ -275,10 +275,10 @@ export default function Sidebar({
             style={{ marginTop: 16, width: '100%', background: visitedHistory?.length >= 2 ? '#d9b15b' : 'var(--surface-3)', color: visitedHistory?.length >= 2 ? '#1a1c1a' : 'var(--text-muted)', cursor: visitedHistory?.length >= 2 ? 'pointer' : 'not-allowed' }}
             disabled={!visitedHistory || visitedHistory.length < 2}
             onClick={() => {
-               window.open(window.location.origin + '?view=compare', '_blank');
+               if (onCompareOpen) onCompareOpen();
             }}
           >
-            <i className="fa-solid fa-layer-group"></i> Compare in New Window
+            <i className="fa-solid fa-layer-group"></i> Compare Sites
           </button>
         </div>
       </div>

@@ -400,6 +400,7 @@ function App() {
           catchmentData={catchmentData}
           visitedHistory={visitedHistory}
           onDeleteHistory={handleDeleteHistory}
+          onCompareOpen={() => setIsCompareOpen(true)}
         />
         <div className="map-area">
           <MapComponent
@@ -434,14 +435,4 @@ function App() {
   );
 }
 
-export default function Root() {
-  if (window.location.search.includes('view=compare')) {
-    return <React.Suspense fallback={<div>Loading...</div>}>
-      <CompareWindow />
-    </React.Suspense>;
-  }
-  return <App />;
-}
-
-// Lazy load CompareWindow
-const CompareWindow = React.lazy(() => import('./components/CompareWindow'));
+export default App;

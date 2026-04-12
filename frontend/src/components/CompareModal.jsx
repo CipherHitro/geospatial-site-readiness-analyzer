@@ -79,7 +79,33 @@ export default function CompareModal({ isOpen, onClose, savedSites = [], useCase
         
         <div className="modal__body" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="compare-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-             <button className="action-btn" style={{width: 'auto', padding: '8px 18px'}}><i className="fa-solid fa-file-csv"></i> Export CSV</button>
+             <button className="action-btn" onClick={async () => {
+               const { default: jsPDF } = await import('jspdf');
+               const { default: autoTable } = await import('jspdf-autotable');
+               const doc = new jsPDF();
+               doc.setFontSize(20);
+               doc.text("Site Comparison Report", 14, 22);
+               doc.setFontSize(12);
+               doc.text(`Use Case: ${useCase.toUpperCase()}`, 14, 32);
+               
+               const head = [['Metric', ...savedSites.map(s => `${s.name} (${s.score})`)]];
+               const rows = ['demographics', 'transportation', 'competition', 'landuse', 'risk'].map(metric => [
+                 metric.charAt(0).toUpperCase() + metric.slice(1),
+                 ...savedSites.map(s => Math.round(s.breakdown?.[metric] || 0).toString())
+               ]);
+               
+               autoTable(doc, { startY: 40, head, body: rows, theme: 'grid', headStyles: { fillColor: [44, 46, 44] } });
+               
+               if (analysisResult) {
+                 const finalY = doc.lastAutoTable.finalY || 100;
+                 doc.setFontSize(14);
+                 doc.text("AI Analysis & Recommendation", 14, finalY + 15);
+                 doc.setFontSize(10);
+                 const splitText = doc.splitTextToSize(analysisResult, 180);
+                 doc.text(splitText, 14, finalY + 22);
+               }
+               doc.save('site-comparison-report.pdf');
+             }} style={{width: 'auto', padding: '8px 18px'}}><i className="fa-solid fa-file-pdf"></i> Export PDF</button>
           </div>
 
           <div className="compare-layout">
@@ -96,7 +122,7 @@ export default function CompareModal({ isOpen, onClose, savedSites = [], useCase
                     <tr key={metric}>
                       <td style={{textTransform:'capitalize'}}>{metric}</td>
                       {savedSites.map((site, i) => (
-                        <td key={i}>{Math.round(site.breakdown[metric] || 0)}</td>
+                        <td key={i}>{Math.round(site.breakdown?.[metric] || 0)}</td>
                       ))}
                     </tr>
                   ))}
@@ -112,19 +138,19 @@ export default function CompareModal({ isOpen, onClose, savedSites = [], useCase
           
           {savedSites.length > 1 && (
             <div className="ai-analysis-section" style={{ background: '#1c1e1c', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
-              <h3 style={{ marginBottom: '15px', color: '#d9b15b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3 style={{ marginBottom: '15px', color: '#d9b15b', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '20px' }}>
                 <i className="fa-solid fa-robot"></i> AI Site Recommendation
               </h3>
               
               <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', color: '#d7e0d8', fontSize: '14px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', color: '#d7e0d8', fontSize: '16px' }}>
                   Specific Needs or Context (Optional)
                 </label>
                 <textarea 
                   value={userNeed}
                   onChange={(e) => setUserNeed(e.target.value)}
                   placeholder="E.g., I need a site with high foot traffic but low environmental risk..."
-                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #444', background: '#2c2e2c', color: '#fff', minHeight: '60px', fontFamily: 'Inter' }}
+                  style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #444', background: '#2c2e2c', color: '#fff', minHeight: '80px', fontFamily: 'Inter', fontSize: '15px' }}
                 />
               </div>
 
@@ -176,13 +202,13 @@ export default function CompareModal({ isOpen, onClose, savedSites = [], useCase
                   }
                 }}
                 disabled={isAnalyzing}
-                style={{ background: '#d9b15b', color: '#1a1c1a', padding: '10px 20px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
+                style={{ background: '#d9b15b', color: '#1a1c1a', padding: '10px 20px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}
               >
                 {isAnalyzing ? <><i className="fa-solid fa-spinner fa-spin"></i> Analyzing...</> : <><i className="fa-solid fa-magic"></i> Suggest Best Site</>}
               </button>
 
               {analysisResult && (
-                <div style={{ marginTop: '20px', padding: '15px', background: '#2c2e2c', borderRadius: '6px', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '14px', color: '#f7f2e8' }}>
+                <div style={{ marginTop: '20px', padding: '20px', background: '#2c2e2c', borderRadius: '6px', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '16px', color: '#f7f2e8' }}>
                   {analysisResult}
                 </div>
               )}
@@ -190,7 +216,7 @@ export default function CompareModal({ isOpen, onClose, savedSites = [], useCase
           )}
 
           {savedSites.length === 0 && (
-            <div className="compare-empty" style={{textAlign: 'center', padding: '32px', color: '#d7e0d8'}}>
+            <div className="compare-empty" style={{textAlign: 'center', padding: '32px', color: '#d7e0d8', fontSize: '16px'}}>
               <i className="fa-solid fa-map-pin fa-2x" style={{marginBottom: 12}}></i>
               <p>Click map points → tap <strong>Compare</strong> in the score panel to add sites.</p>
             </div>
