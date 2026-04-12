@@ -46,7 +46,7 @@ export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme,
           <i className="fa-solid fa-sidebar"></i>
         </button>
         <div className="status-dot" title="API Status">
-          <span className="dot dot--green" style={{boxShadow:'0 0 6px #3fb950', background:'#3fb950'}}></span>
+          <span className="dot dot--green" style={{ boxShadow: '0 0 6px #3fb950', background: '#3fb950' }}></span>
         </div>
       </div>
     </header>
