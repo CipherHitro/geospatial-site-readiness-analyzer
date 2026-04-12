@@ -20,8 +20,34 @@ const AGE_LABELS = {
   'senior_citizen_60plus': 'Elders (60+)',
 };
 
-export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, poiDetail, environmentDetail, scoreData, theme, lastClicked, h3GridData, envGridData, h3CellDetail }) {
+const SATELLITE_STYLE = {
+  version: 8,
+  sources: {
+    esri_satellite: {
+      type: 'raster',
+      tiles: ['https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+      tileSize: 256,
+      attribution: 'Tiles © Esri'
+    }
+  },
+  layers: [
+    {
+      id: 'esri_satellite_layer',
+      type: 'raster',
+      source: 'esri_satellite'
+    }
+  ]
+};
+
+export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, poiDetail, environmentDetail, scoreData, theme, mapMode, lastClicked, h3GridData, envGridData, h3CellDetail }) {
   const mapRef = useRef(null);
+
+  const baseMapStyle = React.useMemo(() => {
+    if (mapMode === 'satellite') return SATELLITE_STYLE;
+    return theme === 'light'
+      ? 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+      : 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+  }, [mapMode, theme]);
 
   const [viewState, setViewState] = useState({
     longitude: 72.5714,
@@ -144,12 +170,58 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
   return (
     <div className="map-container">
       <SearchBox onSelect={handleSearchSelect} />
+
+      {lastClicked && (demographicsDetail || zoningDetail || environmentDetail) && (
+        <aside className="map-insight-panel">
+          {demographicsDetail && (
+            <section className="insight-section">
+              <h4 className="insight-title">Demographics</h4>
+              <div className="insight-row"><span>Area</span><strong>{demographicsDetail.neighborhood || 'N/A'}</strong></div>
+              <div className="insight-row"><span>Population</span><strong>{Number(demographicsDetail.population || 0).toLocaleString()}</strong></div>
+              {(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr) && (
+                <div className="insight-row"><span>Per Capita</span><strong>₹{Number(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr).toLocaleString()}</strong></div>
+              )}
+              {demographicsDetail.people_grouping && (
+                <div className="insight-mini-list">
+                  {Object.entries(demographicsDetail.people_grouping).map(([group, pct]) => (
+                    <div key={group} className="insight-row"><span>{group.replace(/_/g, ' ')}</span><strong>{pct}%</strong></div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {zoningDetail && (
+            <section className="insight-section">
+              <h4 className="insight-title">Land Use</h4>
+              <div className="insight-row"><span>Zone</span><strong style={{ textTransform: 'capitalize' }}>{zoningDetail.zone_type || 'N/A'}</strong></div>
+              <div className="insight-row"><span>Commercial</span><strong>{zoningDetail.allows_commercial ? 'Allowed' : 'Not Allowed'}</strong></div>
+              <div className="insight-row"><span>Buildings</span><strong>{Number(zoningDetail.building_count_500m || 0).toLocaleString()}</strong></div>
+              <div className="insight-row"><span>Built-up Area</span><strong>{Math.round(zoningDetail.total_built_area_sqm || 0).toLocaleString()} sqm</strong></div>
+            </section>
+          )}
+
+          {environmentDetail && (
+            <section className="insight-section">
+              <h4 className="insight-title">Environmental Risk</h4>
+              <div className="insight-row"><span>Flood Risk</span><strong>{Number(environmentDetail.flood_score ?? environmentDetail.flood_score_raw ?? 0).toFixed(1)} / 100</strong></div>
+              {environmentDetail.aqi !== null && environmentDetail.aqi !== undefined && (
+                <div className="insight-row"><span>AQI</span><strong>{environmentDetail.aqi} ({environmentDetail.aqi_level})</strong></div>
+              )}
+              {environmentDetail.dominant_pollutant && (
+                <div className="insight-row"><span>Pollutant</span><strong style={{ textTransform: 'uppercase' }}>{environmentDetail.dominant_pollutant}</strong></div>
+              )}
+            </section>
+          )}
+        </aside>
+      )}
+
       <Map
         {...viewState}
         onMove={evt => setViewState(evt.viewState)}
         onClick={(e) => onMapClick && onMapClick(e.lngLat)}
         mapLib={maplibregl}
-        mapStyle={theme === 'light' ? "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"}
+        mapStyle={baseMapStyle}
         ref={mapRef}
         interactiveLayerIds={[
           'layer_demographics',
@@ -316,56 +388,19 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                   <span className="demo-popup-label">Population:</span>
                   <span className="demo-popup-value">{demographicsDetail.population.toLocaleString()}</span>
                 </div>
-                {demographicsDetail.people_grouping && Object.entries(demographicsDetail.people_grouping).map(([group, pct]) => (
-                  <div className="demo-popup-row" key={group}>
-                    <span className="demo-popup-label">{group.replace(/_/g, ' ')}:</span>
-                    <span className="demo-popup-value">{pct}%</span>
+                {(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr) && (
+                  <div className="demo-popup-row">
+                    <span className="demo-popup-label">Per Capita Income:</span>
+                    <span className="demo-popup-value">₹{Number(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr).toLocaleString()}</span>
                   </div>
-                ))}
-
-                {/* H3 Cell Age Distribution */}
-                {(h3CellDetail || (demographicsDetail.h3_cell && demographicsDetail.h3_cell.age_distribution_pct)) && (() => {
-                  const agePct = h3CellDetail?.age_distribution_pct || demographicsDetail.h3_cell?.age_distribution_pct;
-                  const cellPop = h3CellDetail?.population || demographicsDetail.h3_cell?.population;
-                  if (!agePct) return null;
-                  return (
-                    <>
-                      <div className="zoning-divider"></div>
-                      <div className="zoning-section-label">Age Distribution (H3 Cell)</div>
-                      {cellPop != null && (
-                        <div className="demo-popup-row">
-                          <span className="demo-popup-label">Cell Population:</span>
-                          <span className="demo-popup-value">{Number(cellPop).toLocaleString()}</span>
-                        </div>
-                      )}
-                      {Object.entries(agePct).map(([key, pct]) => (
-                        <div className="age-dist-row" key={key}>
-                          <span className="age-dist-label">
-                            <span className="age-dist-dot" style={{ background: AGE_COLORS[key] || '#8b949e' }}></span>
-                            {AGE_LABELS[key] || key}
-                          </span>
-                          <div className="age-dist-bar-track">
-                            <div className="age-dist-bar-fill" style={{ width: `${Math.min(pct, 100)}%`, background: AGE_COLORS[key] || '#8b949e' }}></div>
-                          </div>
-                          <span className="age-dist-val">{pct}%</span>
-                        </div>
-                      ))}
-                      {(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr) && (
-                        <div className="demo-popup-row" style={{ marginTop: 4 }}>
-                          <span className="demo-popup-label">Per Capita Income:</span>
-                          <span className="demo-popup-value">₹{Number(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr).toLocaleString()}</span>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
+                )}
               </div>
             </div>
           </Popup>
         )}
 
         {/* ENVIRONMENTAL RISK POPUP */}
-        {activeLayers.risk && environmentDetail && lastClicked && (riskHover || demoHover || zoningHover || !scoreData) && (
+        {activeLayers.risk && environmentDetail && h3CellDetail && lastClicked && (riskHover || !scoreData) && (
           <Popup
             longitude={riskPopupCoords.lng}
             latitude={riskPopupCoords.lat}
@@ -375,38 +410,35 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
             className="zoning-popup-map"
           >
             <div className="demo-popup-content">
+              {(() => {
+                const floodRisk = Number(environmentDetail.flood_score ?? environmentDetail.flood_score_raw ?? 0);
+                const isHighRisk = floodRisk > 50 || (environmentDetail.aqi && environmentDetail.aqi > 150);
+
+                return (
+                  <>
               <div className="zoning-popup-header">
                 <span>Environmental Risk</span>
-                <span className={`zoning-badge ${environmentDetail.flood_score > 50 || (environmentDetail.aqi && environmentDetail.aqi > 150) ? 'zoning-badge--no' : 'zoning-badge--ok'}`}>
-                  {environmentDetail.flood_score > 50 ? 'High Risk' : 'Low Risk'}
+                <span className={`zoning-badge ${isHighRisk ? 'zoning-badge--no' : 'zoning-badge--ok'}`}>
+                  {isHighRisk ? 'High Risk' : 'Low Risk'}
                 </span>
               </div>
               <div className="demo-popup-body">
-                {environmentDetail.flood_score !== undefined && (
+                {(environmentDetail.flood_score !== undefined || environmentDetail.flood_score_raw !== undefined) && (
                   <div className="demo-popup-row">
                     <span className="demo-popup-label">Flood Risk Score:</span>
-                    <span className="demo-popup-value">{Number(environmentDetail.flood_score).toFixed(1)} / 100</span>
+                    <span className="demo-popup-value">{floodRisk.toFixed(1)} / 100</span>
                   </div>
                 )}
                 {environmentDetail.aqi !== null && environmentDetail.aqi !== undefined && (
-                  <>
-                    <div className="demo-popup-row">
-                      <span className="demo-popup-label">Live AQI:</span>
-                      <span className="demo-popup-value">{environmentDetail.aqi} ({environmentDetail.aqi_level})</span>
-                    </div>
-                    {environmentDetail.dominant_pollutant && (
-                      <div className="demo-popup-row">
-                        <span className="demo-popup-label">Pollutant:</span>
-                        <span className="demo-popup-value" style={{ textTransform: 'uppercase' }}>{environmentDetail.dominant_pollutant}</span>
-                      </div>
-                    )}
-                  </>
+                  <div className="demo-popup-row">
+                    <span className="demo-popup-label">Live AQI:</span>
+                    <span className="demo-popup-value">{environmentDetail.aqi}</span>
+                  </div>
                 )}
-                <div className="demo-popup-row">
-                  <span className="demo-popup-label">H3 Cell:</span>
-                  <span className="demo-popup-value">{environmentDetail.h3_index || "N/A"}</span>
-                </div>
               </div>
+                  </>
+                );
+              })()}
             </div>
           </Popup>
         )}
@@ -434,53 +466,13 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                   <span className="demo-popup-value" style={{ textTransform: 'capitalize' }}>{zoningDetail.zone_type}</span>
                 </div>
                 <div className="demo-popup-row">
-                  <span className="demo-popup-label">Buildings (Hexagon):</span>
-                  <span className="demo-popup-value">{zoningDetail.building_count_500m}</span>
+                  <span className="demo-popup-label">Commercial:</span>
+                  <span className="demo-popup-value">{zoningDetail.allows_commercial ? 'Allowed' : 'Not Allowed'}</span>
                 </div>
                 <div className="demo-popup-row">
-                  <span className="demo-popup-label">Built-up Area:</span>
-                  <span className="demo-popup-value">{Math.round(zoningDetail.total_built_area_sqm).toLocaleString()} sqm</span>
+                  <span className="demo-popup-label">Buildings:</span>
+                  <span className="demo-popup-value">{Number(zoningDetail.building_count_500m || 0).toLocaleString()}</span>
                 </div>
-
-                <div className="zoning-divider"></div>
-                <div className="zoning-section-label">Building Distribution (Hexagon)</div>
-                {zoningDetail.building_distribution_500m && Object.entries(zoningDetail.building_distribution_500m).map(([type, info]) => (
-                  <div className="demo-popup-row" key={type}>
-                    <span className="demo-popup-label" style={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: BUILDING_COLORS[type.toLowerCase()] || '#8b949e' }}></span>
-                      {type}:
-                    </span>
-                    <span className="demo-popup-value">{info.count} ({info.percentage}%)</span>
-                  </div>
-                ))}
-
-                <div className="zoning-divider"></div>
-                <div className="zoning-section-label">Zone Distribution (Hexagon)</div>
-                {zoningDetail.zone_distribution_500m_pct && Object.entries(zoningDetail.zone_distribution_500m_pct).map(([zone, pct]) => (
-                  <div className="demo-popup-row" key={zone}>
-                    <span className="demo-popup-label" style={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: ZONE_COLORS[zone.toLowerCase()] || '#8b949e' }}></span>
-                      {zone}:
-                    </span>
-                    <span className="demo-popup-value">{pct}%</span>
-                  </div>
-                ))}
-
-                {/* H3 cell info in zoning popup */}
-                {h3CellDetail && (
-                  <>
-                    <div className="zoning-divider"></div>
-                    <div className="zoning-section-label">H3 Cell Info</div>
-                    <div className="demo-popup-row">
-                      <span className="demo-popup-label">Cell Population:</span>
-                      <span className="demo-popup-value">{Number(h3CellDetail.population).toLocaleString()}</span>
-                    </div>
-                    <div className="demo-popup-row">
-                      <span className="demo-popup-label">Per Capita Income:</span>
-                      <span className="demo-popup-value">₹{Number(h3CellDetail.est_per_capita_inr).toLocaleString()}</span>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
           </Popup>
@@ -741,8 +733,13 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
+        {activeLayers.risk && layerData.risk && (
+          <Source id="src_risk" type="geojson" data={layerData.risk}>
+            <Layer id="layer_risk" type="fill" paint={{ 'fill-color': '#f85149', 'fill-opacity': 0.4 }} />
+          </Source>
+        )}
 
-        {activeLayers.poi && layerData.poi && !poiDetail && (
+        {activeLayers.poi && layerData.poi && (
           <Source id="src_poi" type="geojson" data={layerData.poi}>
             <Layer id="layer_poi" type="circle" paint={{
               'circle-color': [

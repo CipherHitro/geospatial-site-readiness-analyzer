@@ -185,6 +185,7 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
               <div className="sp-bars-section">
                 <div className="sp-section-title">Score Breakdown</div>
                 <div className="sp-bars-list">
+                  <ProgressBar key="total_score" label="Total Score" icon="fa-chart-line" value={scoreData.score || 0} color="#58a6ff" />
                   {SCORE_METRICS.map(({ key, label, icon, color }) => {
                     const val = scoreData.breakdown?.[key];
                     if (val === undefined || val === null) return null;

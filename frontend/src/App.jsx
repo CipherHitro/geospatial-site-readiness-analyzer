@@ -7,6 +7,7 @@ import CompareModal from './components/CompareModal';
 
 function App() {
   const [theme, setTheme] = useState('dark');
+  const [mapMode, setMapMode] = useState('standard');
   const [useCase, setUseCase] = useState('retail');
   const [presets, setPresets] = useState({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -254,9 +255,20 @@ function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
         })
-          .then(res => res.json())
+          .then(async (res) => {
+            if (!res.ok) {
+              const errText = await res.text();
+              throw new Error(`Environment API ${res.status}: ${errText}`);
+            }
+            return res.json();
+          })
           .then(data => {
-            setEnvironmentDetail(data);
+            const normalizedEnvironment = {
+              ...data,
+              flood_score: data.flood_score ?? data.flood_score_raw ?? null,
+            };
+
+            setEnvironmentDetail(normalizedEnvironment);
             newScoreData.environment = data;
             newScoreData.breakdown.risk = data.environment_score;
             newScoreData.score += data.environment_score * (weights.risk / 100);
@@ -394,13 +406,18 @@ function App() {
         useCase={useCase}
         onUseCaseChange={handleUseCaseChange}
         theme={theme}
+        mapMode={mapMode}
         onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        onMapModeToggle={() => setMapMode(prev => (prev === 'standard' ? 'satellite' : 'standard'))}
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onHotspotsRun={handleHotspotsRun}
         onRunAI={handleRunOrchestrator}
+        isSidebarOpen={isSidebarOpen}
       />
       <main className={`app-layout ${!isSidebarOpen ? 'sidebar-collapsed' : ''}`} id="app-layout">
         <Sidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
           activeLayers={activeLayers}
           toggleLayer={toggleLayer}
           weights={weights}
@@ -428,6 +445,7 @@ function App() {
             environmentDetail={environmentDetail}
             scoreData={scoreData}
             theme={theme}
+            mapMode={mapMode}
             lastClicked={lastClicked}
             useCase={useCase}
             h3GridData={h3GridData}

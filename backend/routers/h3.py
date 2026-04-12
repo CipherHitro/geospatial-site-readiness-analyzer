@@ -15,7 +15,6 @@ from services.h3_service import get_h3_cell_for_point, get_all_h3_grid
 
 router = APIRouter(prefix="/api/h3", tags=["H3 Grid"])
 
-
 @router.get("/grid", response_model=H3GridResponse)
 def h3_grid(db: Session = Depends(get_db)):
     """
