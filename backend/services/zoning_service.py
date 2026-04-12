@@ -30,17 +30,19 @@ def get_zoning_score(lat: float, lng: float, db: Session) -> dict:
     # ── QUERY 2: Building density within 500m ────────────────────
     # Get total count, area, and breakdown by building_type
     building_query = f"""
-        SELECT
-            building_type,
-            COUNT(*) AS count,
-            COALESCE(SUM(area_sqm), 0) AS total_area_sqm
-        FROM buildings
-        WHERE ST_DWithin(
-            geometry::geography,
-            ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326)::geography,
-            500
+        WITH h3 AS (
+            SELECT geometry as geom 
+            FROM h3_grid 
+            WHERE ST_Contains(geometry, ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326))
+            LIMIT 1
         )
-        GROUP BY building_type;
+        SELECT
+            b.building_type,
+            COUNT(*) AS count,
+            COALESCE(SUM(b.area_sqm), 0) AS total_area_sqm
+        FROM buildings b, h3
+        WHERE ST_Intersects(b.geometry, h3.geom)
+        GROUP BY b.building_type;
     """
     building_df = pd.read_sql(building_query, engine)
     
@@ -61,21 +63,18 @@ def get_zoning_score(lat: float, lng: float, db: Session) -> dict:
     # ── QUERY 3: Surrounding Zone Distribution (500m) ────────────────
     # We buffer point by 500m in meters CRS (32643) then intersect with zones
     zone_dist_query = f"""
-        WITH buffer AS (
-            SELECT ST_Transform(
-                ST_Buffer(
-                    ST_Transform(ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326), 32643), 
-                    500
-                ), 
-                4326
-            ) as geom
+        WITH h3 AS (
+            SELECT geometry as geom 
+            FROM h3_grid 
+            WHERE ST_Contains(geometry, ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326))
+            LIMIT 1
         )
         SELECT 
             z.zone_type,
-            ST_Area(ST_Intersection(z.geometry, b.geom)::geography) as overlap_area_sqm,
-            ST_AsGeoJSON(ST_Intersection(z.geometry, b.geom)) as geojson
-        FROM zones z, buffer b
-        WHERE ST_Intersects(z.geometry, b.geom)
+            ST_Area(ST_Intersection(z.geometry, h3.geom)::geography) as overlap_area_sqm,
+            ST_AsGeoJSON(ST_Intersection(z.geometry, h3.geom)) as geojson
+        FROM zones z, h3
+        WHERE ST_Intersects(z.geometry, h3.geom)
     """
     zone_dist_df = pd.read_sql(zone_dist_query, engine)
     
@@ -103,15 +102,17 @@ def get_zoning_score(lat: float, lng: float, db: Session) -> dict:
                 
     # ── QUERY 4: Surrounding Buildings Geometries (500m) ────────────────
     buildings_features_query = f"""
+        WITH h3 AS (
+            SELECT geometry as geom 
+            FROM h3_grid 
+            WHERE ST_Contains(geometry, ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326))
+            LIMIT 1
+        )
         SELECT 
-            building_type, 
-            ST_AsGeoJSON(geometry) as geojson
-        FROM buildings
-        WHERE ST_DWithin(
-            geometry::geography,
-            ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326)::geography,
-            500
-        );
+            b.building_type, 
+            ST_AsGeoJSON(b.geometry) as geojson
+        FROM buildings b, h3
+        WHERE ST_Intersects(b.geometry, h3.geom);
     """
     buildings_features_df = pd.read_sql(buildings_features_query, engine)
     buildings_geojson = {"type": "FeatureCollection", "features": []}

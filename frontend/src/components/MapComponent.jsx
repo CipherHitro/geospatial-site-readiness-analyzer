@@ -4,7 +4,23 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import SearchBox from './SearchBox';
 
-export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, poiDetail, scoreData, theme, lastClicked }) {
+const AGE_COLORS = {
+  'child_0_18': '#58a6ff',
+  'youth_19_25': '#3fb950',
+  'adult_26_45': '#d29922',
+  'senior_46_60': '#e3883e',
+  'senior_citizen_60plus': '#f85149',
+};
+
+const AGE_LABELS = {
+  'child_0_18': 'Children (0–18)',
+  'youth_19_25': 'Youth (19–25)',
+  'adult_26_45': 'Adults (26–45)',
+  'senior_46_60': 'Seniors (46–60)',
+  'senior_citizen_60plus': 'Elders (60+)',
+};
+
+export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, poiDetail, environmentDetail, scoreData, theme, lastClicked, h3GridData, envGridData, h3CellDetail }) {
   const mapRef = useRef(null);
 
   const [viewState, setViewState] = useState({
@@ -18,45 +34,20 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
   const [hoverInfo, setHoverInfo] = useState(null);
   const [demoHover, setDemoHover] = useState(false);
   const [zoningHover, setZoningHover] = useState(false);
+  const [riskHover, setRiskHover] = useState(false);
 
-  // Helper to create 1km circle
-  const circleGeoJSON = React.useMemo(() => {
-    if (!lastClicked || !activeLayers.demographics) return null;
-    const points = 64;
-    const coords = [];
-    const radiusKm = 1;
-    const kmPerLat = 111.32;
-    const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
-
-    for (let i = 0; i < points; i++) {
-      const angle = (i * 360) / points;
-      const dx = radiusKm * Math.cos(angle * Math.PI / 180);
-      const dy = radiusKm * Math.sin(angle * Math.PI / 180);
-      coords.push([
-        lastClicked.lng + (dx / kmPerLng),
-        lastClicked.lat + (dy / kmPerLat)
-      ]);
-    }
-    coords.push(coords[0]);
-    return {
-      type: 'FeatureCollection',
-      features: [{
-        type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: [coords] }
-      }]
-    };
-  }, [lastClicked, activeLayers.demographics]);
+  // Removed 1km circle logic
 
   const BUILDING_COLORS = { 'commercial': '#3fb950', 'anchor': '#a371f7', 'residential': '#58a6ff', 'generic': '#8b949e' };
   const ZONE_COLORS = { 'commercial': '#3fb950', 'residential': '#58a6ff', 'industrial': '#d29922', 'restricted': '#f85149' };
 
-  // Calculate coordinates 520m East of the clicked point to anchor the popup outside the circle
+  // Calculate coordinates East of the clicked point to anchor the popup
   const zoningPopupCoords = React.useMemo(() => {
     if (!lastClicked) return null;
     const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
     return {
       lat: lastClicked.lat,
-      lng: lastClicked.lng + (0.52 / kmPerLng)
+      lng: lastClicked.lng + (0.3 / kmPerLng)
     };
   }, [lastClicked]);
 
@@ -94,39 +85,33 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
     const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
     return {
       lat: lastClicked.lat,
-      lng: lastClicked.lng - (1.02 / kmPerLng)
+      lng: lastClicked.lng - (0.3 / kmPerLng)
     };
   }, [lastClicked]);
 
+  // Calculate coordinates South of the clicked point for Environmental Risk
+  const riskPopupCoords = React.useMemo(() => {
+    if (!lastClicked) return null;
+    return {
+      lat: lastClicked.lat - 0.003,
+      lng: lastClicked.lng
+    };
+  }, [lastClicked]);
 
-  // Helper to create 500m circle for zoning
-  const zoningCircleGeoJSON = React.useMemo(() => {
-    if (!lastClicked || !activeLayers.landuse || !zoningDetail) return null;
-    const points = 64;
-    const coords = [];
-    const radiusKm = 0.5;
-    const kmPerLat = 111.32;
-    const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
-
-    for (let i = 0; i < points; i++) {
-      const angle = (i * 360) / points;
-      const dx = radiusKm * Math.cos(angle * Math.PI / 180);
-      const dy = radiusKm * Math.sin(angle * Math.PI / 180);
-      coords.push([
-        lastClicked.lng + (dx / kmPerLng),
-        lastClicked.lat + (dy / kmPerLat)
-      ]);
-    }
-    coords.push(coords[0]);
+  // H3 cell highlight GeoJSON — show the hex boundary of the active cell
+  const h3CellHighlightGeoJSON = React.useMemo(() => {
+    if (!h3CellDetail || !h3CellDetail.geometry) return null;
     return {
       type: 'FeatureCollection',
       features: [{
         type: 'Feature',
-        geometry: { type: 'Polygon', coordinates: [coords] }
+        geometry: h3CellDetail.geometry,
+        properties: { h3_index: h3CellDetail.h3_index }
       }]
     };
-  }, [lastClicked, activeLayers.landuse, zoningDetail]);
+  }, [h3CellDetail]);
 
+  // Removed 500m zoning circle logic
   const handleSearchSelect = useCallback((lat, lon) => {
     const map = mapRef.current?.getMap?.();
     if (map) {
@@ -152,7 +137,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
     };
 
     Object.keys(activeLayers).forEach(key => {
-      if (activeLayers[key]) fetchLayer(key);
+      if (activeLayers[key] && key !== 'h3grid') fetchLayer(key);
     });
   }, [activeLayers]);
 
@@ -166,13 +151,27 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         mapLib={maplibregl}
         mapStyle={theme === 'light' ? "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"}
         ref={mapRef}
-        interactiveLayerIds={['layer_demographics', 'layer_landuse', 'layer_risk', 'demo_highlight_fill', 'zoning_highlight_fill', 'layer_poi', 'layer_dynamic_poi']}
+        interactiveLayerIds={[
+          'layer_demographics',
+          'layer_landuse',
+          'layer_risk',
+          'h3_cell_highlight_fill',
+          'layer_poi',
+          'layer_dynamic_poi'
+        ]}
         onMouseEnter={(e) => {
           if (e.features && e.features.length > 0) {
             const feature = e.features[0];
             const lid = feature.layer.id;
-            if (lid === 'demo_highlight_fill') setDemoHover(true);
-            if (lid === 'zoning_highlight_fill') setZoningHover(true);
+
+            if (lid === 'h3_cell_highlight_fill') {
+              setDemoHover(true);
+              setZoningHover(true);
+              setRiskHover(true);
+            } else if (lid === 'layer_risk') {
+              setRiskHover(true);
+            }
+
             if (lid === 'layer_poi' || lid === 'layer_dynamic_poi') {
               const props = feature.properties;
               setHoverInfo({
@@ -187,9 +186,10 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
             }
           }
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={() => {
           setDemoHover(false);
           setZoningHover(false);
+          setRiskHover(false);
           // Only clear POI hover if we are actually leaving the point (and not hovering over bus/train)
           if (hoverInfo && hoverInfo.id && hoverInfo.id.startsWith('poi-')) {
             setHoverInfo(null);
@@ -206,29 +206,68 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
             anchor="bottom" />
         )}
 
-        {/* DEMOGRAPHIC HIGHLIGHT CIRCLE */}
-        {circleGeoJSON && (
-          <Source id="demo_highlight_src" type="geojson" data={circleGeoJSON}>
+        {/* ── H3 GRID OVERLAY (toggle-able) ── */}
+        {activeLayers.h3grid && h3GridData && (
+          <Source id="h3_grid_src" type="geojson" data={h3GridData}>
             <Layer
-              id="demo_highlight_fill"
+              id="h3_grid_fill"
               type="fill"
-              paint={{ 'fill-color': '#58a6ff', 'fill-opacity': demoHover ? 0.3 : 0.15 }}
+              paint={{
+                'fill-color': [
+                  'interpolate', ['linear'],
+                  ['get', 'population'],
+                  0, '#1a1b26',
+                  1000, '#1e3a5f',
+                  5000, '#2563eb',
+                  15000, '#7c3aed',
+                  25000, '#dc2626',
+                  32000, '#fbbf24'
+                ],
+                'fill-opacity': 0.25
+              }}
             />
             <Layer
-              id="demo_highlight_line"
+              id="h3_grid_line"
               type="line"
-              paint={{ 'line-color': '#58a6ff', 'line-width': 2, 'line-dasharray': [2, 1] }}
+              paint={{
+                'line-color': '#79c0ff',
+                'line-width': 1,
+                'line-opacity': 0.5
+              }}
             />
           </Source>
         )}
 
-        {/* DEMOGRAPHICS POPUP */}
-        {demographicsDetail && lastClicked && (demoHover || !scoreData) && (
+        {/* ── H3 ACTIVE CELL HIGHLIGHT ── */}
+        {h3CellHighlightGeoJSON && (
+          <Source id="h3_cell_highlight_src" type="geojson" data={h3CellHighlightGeoJSON}>
+            <Layer
+              id="h3_cell_highlight_fill"
+              type="fill"
+              paint={{
+                'fill-color': '#79c0ff',
+                'fill-opacity': 0.2
+              }}
+            />
+            <Layer
+              id="h3_cell_highlight_line"
+              type="line"
+              paint={{
+                'line-color': '#79c0ff',
+                'line-width': 2.5,
+                'line-opacity': 0.9
+              }}
+            />
+          </Source>
+        )}
+
+        {/* DEMOGRAPHICS POPUP — enhanced with H3 cell age distribution */}
+        {activeLayers.demographics && demographicsDetail && lastClicked && (demoHover || !scoreData) && (
           <Popup
             longitude={demoPopupCoords.lng}
             latitude={demoPopupCoords.lat}
-            anchor="right"
-            offset={10}
+            anchor="bottom-right"
+            offset={40}
             closeButton={false}
             className="demographic-popup-map"
           >
@@ -245,33 +284,102 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                     <span className="demo-popup-value">{pct}%</span>
                   </div>
                 ))}
+
+                {/* H3 Cell Age Distribution */}
+                {(h3CellDetail || (demographicsDetail.h3_cell && demographicsDetail.h3_cell.age_distribution_pct)) && (() => {
+                  const agePct = h3CellDetail?.age_distribution_pct || demographicsDetail.h3_cell?.age_distribution_pct;
+                  const cellPop = h3CellDetail?.population || demographicsDetail.h3_cell?.population;
+                  if (!agePct) return null;
+                  return (
+                    <>
+                      <div className="zoning-divider"></div>
+                      <div className="zoning-section-label">Age Distribution (H3 Cell)</div>
+                      {cellPop != null && (
+                        <div className="demo-popup-row">
+                          <span className="demo-popup-label">Cell Population:</span>
+                          <span className="demo-popup-value">{Number(cellPop).toLocaleString()}</span>
+                        </div>
+                      )}
+                      {Object.entries(agePct).map(([key, pct]) => (
+                        <div className="age-dist-row" key={key}>
+                          <span className="age-dist-label">
+                            <span className="age-dist-dot" style={{ background: AGE_COLORS[key] || '#8b949e' }}></span>
+                            {AGE_LABELS[key] || key}
+                          </span>
+                          <div className="age-dist-bar-track">
+                            <div className="age-dist-bar-fill" style={{ width: `${Math.min(pct, 100)}%`, background: AGE_COLORS[key] || '#8b949e' }}></div>
+                          </div>
+                          <span className="age-dist-val">{pct}%</span>
+                        </div>
+                      ))}
+                      {(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr) && (
+                        <div className="demo-popup-row" style={{ marginTop: 4 }}>
+                          <span className="demo-popup-label">Per Capita Income:</span>
+                          <span className="demo-popup-value">₹{Number(h3CellDetail?.est_per_capita_inr || demographicsDetail.h3_cell?.est_per_capita_inr).toLocaleString()}</span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </Popup>
         )}
-        {/* ZONING HIGHLIGHT CIRCLE (500m) */}
-        {zoningCircleGeoJSON && (
-          <Source id="zoning_highlight_src" type="geojson" data={zoningCircleGeoJSON}>
-            <Layer
-              id="zoning_highlight_fill"
-              type="fill"
-              paint={{ 'fill-color': '#3fb950', 'fill-opacity': zoningHover ? 0.3 : 0.15 }}
-            />
-            <Layer
-              id="zoning_highlight_line"
-              type="line"
-              paint={{ 'line-color': '#3fb950', 'line-width': 2, 'line-dasharray': [2, 1] }}
-            />
-          </Source>
+
+        {/* ENVIRONMENTAL RISK POPUP */}
+        {activeLayers.risk && environmentDetail && lastClicked && (riskHover || demoHover || zoningHover || !scoreData) && (
+          <Popup
+            longitude={riskPopupCoords.lng}
+            latitude={riskPopupCoords.lat}
+            anchor="top"
+            offset={40}
+            closeButton={false}
+            className="zoning-popup-map"
+          >
+            <div className="demo-popup-content">
+              <div className="zoning-popup-header">
+                <span>Environmental Risk</span>
+                <span className={`zoning-badge ${environmentDetail.flood_score > 50 || (environmentDetail.aqi && environmentDetail.aqi > 150) ? 'zoning-badge--no' : 'zoning-badge--ok'}`}>
+                  {environmentDetail.flood_score > 50 ? 'High Risk' : 'Low Risk'}
+                </span>
+              </div>
+              <div className="demo-popup-body">
+                {environmentDetail.flood_score !== undefined && (
+                  <div className="demo-popup-row">
+                    <span className="demo-popup-label">Flood Risk Score:</span>
+                    <span className="demo-popup-value">{Number(environmentDetail.flood_score).toFixed(1)} / 100</span>
+                  </div>
+                )}
+                {environmentDetail.aqi !== null && environmentDetail.aqi !== undefined && (
+                  <>
+                    <div className="demo-popup-row">
+                      <span className="demo-popup-label">Live AQI:</span>
+                      <span className="demo-popup-value">{environmentDetail.aqi} ({environmentDetail.aqi_level})</span>
+                    </div>
+                    {environmentDetail.dominant_pollutant && (
+                      <div className="demo-popup-row">
+                        <span className="demo-popup-label">Pollutant:</span>
+                        <span className="demo-popup-value" style={{ textTransform: 'uppercase' }}>{environmentDetail.dominant_pollutant}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div className="demo-popup-row">
+                  <span className="demo-popup-label">H3 Cell:</span>
+                  <span className="demo-popup-value">{environmentDetail.h3_index || "N/A"}</span>
+                </div>
+              </div>
+            </div>
+          </Popup>
         )}
 
         {/* ZONING POPUP */}
-        {zoningDetail && lastClicked && (zoningHover || !scoreData) && (
+        {activeLayers.landuse && zoningDetail && lastClicked && (zoningHover || !scoreData) && (
           <Popup
             longitude={zoningPopupCoords.lng}
             latitude={zoningPopupCoords.lat}
-            anchor="left"
-            offset={10}
+            anchor="bottom-left"
+            offset={40}
             closeButton={false}
             className="zoning-popup-map"
           >
@@ -288,7 +396,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                   <span className="demo-popup-value" style={{ textTransform: 'capitalize' }}>{zoningDetail.zone_type}</span>
                 </div>
                 <div className="demo-popup-row">
-                  <span className="demo-popup-label">Buildings (500m):</span>
+                  <span className="demo-popup-label">Buildings (Hexagon):</span>
                   <span className="demo-popup-value">{zoningDetail.building_count_500m}</span>
                 </div>
                 <div className="demo-popup-row">
@@ -297,7 +405,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 </div>
 
                 <div className="zoning-divider"></div>
-                <div className="zoning-section-label">Building Distribution</div>
+                <div className="zoning-section-label">Building Distribution (Hexagon)</div>
                 {zoningDetail.building_distribution_500m && Object.entries(zoningDetail.building_distribution_500m).map(([type, info]) => (
                   <div className="demo-popup-row" key={type}>
                     <span className="demo-popup-label" style={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -309,7 +417,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 ))}
 
                 <div className="zoning-divider"></div>
-                <div className="zoning-section-label">Zone Distribution</div>
+                <div className="zoning-section-label">Zone Distribution (Hexagon)</div>
                 {zoningDetail.zone_distribution_500m_pct && Object.entries(zoningDetail.zone_distribution_500m_pct).map(([zone, pct]) => (
                   <div className="demo-popup-row" key={zone}>
                     <span className="demo-popup-label" style={{ textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -319,6 +427,22 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                     <span className="demo-popup-value">{pct}%</span>
                   </div>
                 ))}
+
+                {/* H3 cell info in zoning popup */}
+                {h3CellDetail && (
+                  <>
+                    <div className="zoning-divider"></div>
+                    <div className="zoning-section-label">H3 Cell Info</div>
+                    <div className="demo-popup-row">
+                      <span className="demo-popup-label">Cell Population:</span>
+                      <span className="demo-popup-value">{Number(h3CellDetail.population).toLocaleString()}</span>
+                    </div>
+                    <div className="demo-popup-row">
+                      <span className="demo-popup-label">Per Capita Income:</span>
+                      <span className="demo-popup-value">₹{Number(h3CellDetail.est_per_capita_inr).toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </Popup>
@@ -593,11 +717,6 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
-        {activeLayers.risk && layerData.risk && (
-          <Source id="src_risk" type="geojson" data={layerData.risk}>
-            <Layer id="layer_risk" type="fill" paint={{ 'fill-color': '#f85149', 'fill-opacity': 0.4 }} />
-          </Source>
-        )}
 
         {activeLayers.poi && layerData.poi && !poiDetail && (
           <Source id="src_poi" type="geojson" data={layerData.poi}>

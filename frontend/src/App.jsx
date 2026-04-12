@@ -28,6 +28,11 @@ function App() {
   const [demographicsDetail, setDemographicsDetail] = useState(null);
   const [zoningDetail, setZoningDetail] = useState(null);
   const [poiDetail, setPoiDetail] = useState(null);
+  const [environmentDetail, setEnvironmentDetail] = useState(null);
+
+  // ── H3 Grid State ──────────────────────────────────────────
+  const [h3GridData, setH3GridData] = useState(null);
+  const [h3CellDetail, setH3CellDetail] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/api/score/presets')
@@ -39,6 +44,16 @@ function App() {
   useEffect(() => {
     document.documentElement.className = theme;
   }, [theme]);
+
+  // Fetch H3 grid data when the h3grid is toggled on
+  useEffect(() => {
+    if (activeLayers.h3grid && !h3GridData) {
+      fetch('http://localhost:8000/api/h3/grid')
+        .then(r => r.json())
+        .then(data => setH3GridData(data))
+        .catch(e => console.error('H3 Grid fetch error', e));
+    }
+  }, [activeLayers.h3grid]);
 
   const isInitialMount = React.useRef(true);
   useEffect(() => {
@@ -92,6 +107,8 @@ function App() {
     setZoningDetail(null);
     setMapInfrastructure(null);
     setPoiDetail(null);
+    setEnvironmentDetail(null);
+    setH3CellDetail(null);
 
     let newScoreData = {
       lat: lngLat.lat,
@@ -104,6 +121,23 @@ function App() {
     };
 
     const fetchPromises = [];
+
+    // ── H3 Cell Lookup (always runs — invisible data source) ──
+    const h3Promise = fetch('http://localhost:8000/api/h3/cell', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+    })
+      .then(res => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then(data => {
+        if (data) setH3CellDetail(data);
+      })
+      .catch(e => console.warn('H3 cell lookup failed', e));
+
+    fetchPromises.push(h3Promise);
 
     // Demographic Layer
     if (activeLayers.demographics) {
@@ -201,6 +235,22 @@ function App() {
             newScoreData.breakdown.competition = data.score;
           })
           .catch(e => console.error('POI Scoring error', e))
+      );
+    }
+
+    // Environmental Risk Layer (AQI + Flood)
+    if (activeLayers.risk) {
+      fetchPromises.push(
+        fetch('http://localhost:8000/api/environment/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setEnvironmentDetail(data);
+          })
+          .catch(e => console.error('Environment Scoring error', e))
       );
     }
 
@@ -313,13 +363,15 @@ function App() {
           demographicsDetail={demographicsDetail}
           zoningDetail={zoningDetail}
           poiDetail={poiDetail}
+          environmentDetail={environmentDetail}
           scoreData={scoreData}
           theme={theme}
           lastClicked={lastClicked}
           useCase={useCase}
+          h3GridData={h3GridData}
+          h3CellDetail={h3CellDetail}
         />
       </main>
-      <ScorePanel scoreData={scoreData} onClose={() => setScoreData(null)} onCompareAdd={handleCompareAdd} />
       <CompareModal isOpen={isCompareOpen} onClose={() => setIsCompareOpen(false)} savedSites={savedSites} />
     </>
   );

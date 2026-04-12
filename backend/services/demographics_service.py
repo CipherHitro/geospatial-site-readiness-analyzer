@@ -6,6 +6,8 @@ from pathlib import Path
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from services.h3_service import get_h3_cell_for_point
+
 
 DATASET_DIR = Path(__file__).resolve().parent.parent / "dataset"
 DATASET_CANDIDATES = [
@@ -331,13 +333,6 @@ def get_demographics_score(lat: float, lng: float, db: Session) -> dict:
         )
         SELECT
             COALESCE(SUM(population) FILTER (
-                WHERE ST_DWithin(
-                    geometry::geography,
-                    pt::geography,
-                    1000
-                )
-            ), 0) AS population_in_1km,
-            COALESCE(SUM(population) FILTER (
                 WHERE ST_Intersects(
                     geometry,
                     pt
@@ -350,24 +345,37 @@ def get_demographics_score(lat: float, lng: float, db: Session) -> dict:
 
     row = db.execute(query, {"lat": lat, "lng": lng}).mappings().first()
 
-    population_in_1km = float(row["population_in_1km"]) if row and row["population_in_1km"] is not None else 0.0
     containing_cell_population = (
         float(row["containing_cell_population"])
         if row and row["containing_cell_population"] is not None
         else 0.0
     )
-    demographics_score = _score_population(population_in_1km)
     income = get_income_score(lat, lng)
+
+    # H3 cell lookup — resolve the clicked point to its H3 hexagon
+    h3_cell = get_h3_cell_for_point(lat, lng, db)
+
+    # Keep demographics payload free of environmental-risk fields.
+    h3_cell_for_demographics = None
+    if h3_cell:
+        h3_cell_for_demographics = {
+            k: v for k, v in h3_cell.items() if k != "flood_score"
+        }
+
+    # Use H3 cell population (respective hexagon only)
+    population = h3_cell["population"] if h3_cell else containing_cell_population
+    demographics_score = _score_population(population)
 
     return {
         "demographics_score": round(demographics_score, 1),
-        "population": round(population_in_1km, 2),
+        "population": round(population, 2),
         "income_level_score": income["income_level_score"],
         "relative_wealth_index": income["relative_wealth_index"],
         "people_grouping": income["people_grouping"],
         "breakdown": {
-            "population_in_1km": round(population_in_1km, 2),
             "containing_cell_population": round(containing_cell_population, 2),
+            "h3_population": round(population, 2)
         },
         "income_breakdown": income["breakdown"],
+        "h3_cell": h3_cell_for_demographics,
     }

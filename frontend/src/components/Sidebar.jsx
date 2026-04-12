@@ -5,7 +5,8 @@ const layersConfig = [
   { id: 'transportation', name: 'Transportation', sub: 'Roads · Highways', color: '#d29922' },
   { id: 'poi', name: 'Points of Interest', sub: 'Competitors · Anchors · Amenities', color: '#e3883e' },
   { id: 'landuse', name: 'Land Use & Zoning', sub: 'Commercial · Industrial · Residential', color: '#3fb950' },
-  { id: 'risk', name: 'Environmental Risk', sub: 'Flood · Industrial · Air Quality', color: '#f85149' }
+  { id: 'risk', name: 'Environmental Risk', sub: 'Flood · Industrial · Air Quality', color: '#f85149' },
+  { id: 'h3grid', name: 'H3 Grid Overlay', sub: 'Hexagonal cell boundaries · Ahmedabad', color: '#79c0ff' }
 ];
 
 export default function Sidebar({
@@ -82,6 +83,28 @@ export default function Sidebar({
             <div className="legend-row"><span className="legend-dot" style={{ background: '#e9c46a', borderRadius: '2px', height: '4px' }}></span>Secondary Road</div>
             <div className="legend-row"><span className="legend-dot" style={{ background: '#2a9d8f', borderRadius: '2px', height: '4px' }}></span>Tertiary Road</div>
             <div className="legend-row"><span className="legend-dot" style={{ background: '#8ab17d', borderRadius: '2px', height: '4px' }}></span>Residential Road</div>
+          </div>
+
+          <div className="h3-legend-box" style={{ display: activeLayers.h3grid ? 'block' : 'none' }}>
+            <div className="legend-title">H3 Grid — Population Density</div>
+            <div className="h3-legend-gradient"></div>
+            <div className="h3-legend-labels">
+              <span>Low</span>
+              <span>Medium</span>
+              <span>High</span>
+              <span>Very High</span>
+            </div>
+          </div>
+          
+          <div className="h3-legend-box" style={{ display: activeLayers.risk ? 'block' : 'none', marginTop: '12px' }}>
+            <div className="legend-title">Environmental Risk — Flood Exposure</div>
+            <div className="h3-legend-gradient" style={{ background: 'linear-gradient(to right, #3fb950, #d29922, #f85149, #8b0000)' }}></div>
+            <div className="h3-legend-labels">
+              <span>Safe</span>
+              <span>Medium</span>
+              <span>High</span>
+              <span>Severe</span>
+            </div>
           </div>
         </div>
       </div>
