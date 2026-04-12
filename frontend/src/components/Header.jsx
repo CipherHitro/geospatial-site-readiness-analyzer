@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme, onThemeToggle, onSidebarToggle, onHotspotsRun, isSidebarOpen }) {
+export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme, mapMode, onThemeToggle, onMapModeToggle, onSidebarToggle, onHotspotsRun, isSidebarOpen }) {
   return (
     <header className={`floating-header-controls ${isSidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`} id="topnav">
       <div className="floating-presets" id="preset-bar">
@@ -22,6 +22,9 @@ export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme,
       </div>
 
       <div className="floating-actions">
+        <button className={`icon-btn ${mapMode === 'satellite' ? 'active' : ''}`} title="Toggle Satellite Map" onClick={onMapModeToggle}>
+          <i className="fa-solid fa-earth-asia"></i>
+        </button>
         <button className="icon-btn" title="Toggle Theme" onClick={onThemeToggle}>
           <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
         </button>
@@ -33,10 +36,7 @@ export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme,
         </button>
         <button className="icon-btn" title="Toggle Sidebar" onClick={onSidebarToggle}>
           <i className="fa-solid fa-sidebar"></i>
-        </button>
-        <div className="status-dot" title="API Status">
-          <span className="dot dot--green" style={{boxShadow:'0 0 6px #3fb950', background:'#3fb950'}}></span>
-        </div>
+        </button> 
       </div>
     </header>
   );
