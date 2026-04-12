@@ -18,6 +18,7 @@ function App() {
 
   const [lastClicked, setLastClicked] = useState(null);
   const [scoreData, setScoreData] = useState(null);
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [hotspotsData, setHotspotsData] = useState(null);
   const [catchmentData, setCatchmentData] = useState(null);
 
@@ -60,16 +61,16 @@ function App() {
     if (isInitialMount.current) {
       isInitialMount.current = false;
     } else if (lastClicked) {
-      handleMapClick(lastClicked);
+      handleMapClick(lastClicked, true);
     }
   }, [activeLayers]);
 
-  // Re-fetch POI data when the use case changes
+  // Re-fetch all active layer data when the use case changes
   const isFirstUseCase = React.useRef(true);
   useEffect(() => {
     if (isFirstUseCase.current) {
       isFirstUseCase.current = false;
-    } else if (lastClicked && activeLayers.poi) {
+    } else if (lastClicked) {
       handleMapClick(lastClicked);
     }
   }, [useCase]);
@@ -95,7 +96,7 @@ function App() {
 
   const toggleLayer = (layerId) => setActiveLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
 
-  const handleMapClick = async (lngLat) => {
+  const handleMapClick = async (lngLat, isRefresh = false) => {
     const total = Object.values(weights).reduce((a, b) => a + b, 0);
     if (total !== 100) {
       alert("Weights must sum exactly to 100% before scoring.");
@@ -103,12 +104,14 @@ function App() {
     }
 
     setLastClicked(lngLat);
-    setDemographicsDetail(null);
-    setZoningDetail(null);
-    setMapInfrastructure(null);
-    setPoiDetail(null);
-    setEnvironmentDetail(null);
-    setH3CellDetail(null);
+    if (!isRefresh) {
+      setDemographicsDetail(null);
+      setZoningDetail(null);
+      setMapInfrastructure(null);
+      setPoiDetail(null);
+      setEnvironmentDetail(null);
+      setH3CellDetail(null);
+    }
 
     let newScoreData = {
       lat: lngLat.lat,
@@ -144,7 +147,7 @@ function App() {
       const demoPromise = fetch('http://localhost:8000/api/demographics/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+        body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
       })
         .then(res => res.json())
         .then(async (data) => {
@@ -166,6 +169,7 @@ function App() {
 
           newScoreData.demographics = data;
           newScoreData.breakdown.demographics = data.demographics_score;
+          newScoreData.score += data.demographics_score * (weights.demographics / 100);
         })
         .catch(e => console.error('Demographics Scoring error', e));
 
@@ -178,7 +182,7 @@ function App() {
         fetch('http://localhost:8000/api/transport/score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
         })
           .then(res => res.json())
           .then(data => {
@@ -190,7 +194,7 @@ function App() {
               `Nearest bus stop: ${data.nearest_bus_stop} (${data.bus_stop_distance_m}m)`,
               `Nearest station: ${data.nearest_station} (${data.station_distance_m}m)`
             );
-            newScoreData.score = Math.max(newScoreData.score, data.transport_score);
+            newScoreData.score += data.transport_score * (weights.transportation / 100);
 
             if (data.roads_nearby || data.bus_stops_nearby || data.stations_nearby) {
               setMapInfrastructure({
@@ -210,12 +214,14 @@ function App() {
         fetch('http://localhost:8000/api/zoning/score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
         })
           .then(res => res.json())
           .then(data => {
             setZoningDetail(data);
+            newScoreData.zoning = data;
             newScoreData.breakdown.landuse = data.zoning_score;
+            newScoreData.score += data.zoning_score * (weights.landuse / 100);
           })
           .catch(e => console.error('Zoning Scoring error', e))
       );
@@ -232,7 +238,9 @@ function App() {
           .then(res => res.json())
           .then(data => {
             setPoiDetail(data);
-            newScoreData.breakdown.competition = data.score;
+            newScoreData.poi = data;
+            newScoreData.breakdown.competition = data.poi_score || data.score;
+            newScoreData.score += (data.poi_score || data.score) * (weights.competition / 100);
           })
           .catch(e => console.error('POI Scoring error', e))
       );
@@ -244,11 +252,14 @@ function App() {
         fetch('http://localhost:8000/api/environment/score', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
         })
           .then(res => res.json())
           .then(data => {
             setEnvironmentDetail(data);
+            newScoreData.environment = data;
+            newScoreData.breakdown.risk = data.environment_score;
+            newScoreData.score += data.environment_score * (weights.risk / 100);
           })
           .catch(e => console.error('Environment Scoring error', e))
       );
@@ -257,16 +268,12 @@ function App() {
     if (fetchPromises.length > 0) {
       await Promise.all(fetchPromises);
 
-      // If ONLY map-centric layers are active, don't open the ScorePanel
-      const mapCentricOnly = (activeLayers.demographics || activeLayers.landuse) && !activeLayers.transportation;
-      if (mapCentricOnly) {
-        setScoreData(null);
-      } else {
-        if (newScoreData.score > 0) {
-          newScoreData.grade = newScoreData.score > 80 ? 'A' : newScoreData.score > 60 ? 'B' : 'C';
-        }
-        setScoreData(newScoreData);
+      if (newScoreData.score > 0) {
+        newScoreData.score = Math.round(newScoreData.score);
+        newScoreData.grade = newScoreData.score > 80 ? 'A' : newScoreData.score > 60 ? 'B' : 'C';
       }
+      setScoreData(newScoreData);
+      setIsPanelVisible(true);
       setCatchmentData(null);
     }
   };
@@ -357,23 +364,33 @@ function App() {
           hotspotsData={hotspotsData}
           catchmentData={catchmentData}
         />
-        <MapComponent
-          activeLayers={activeLayers}
-          onMapClick={handleMapClick}
-          hotspotsData={hotspotsData}
-          catchmentData={catchmentData}
-          mapInfrastructure={mapInfrastructure}
-          demographicsDetail={demographicsDetail}
-          zoningDetail={zoningDetail}
-          poiDetail={poiDetail}
-          environmentDetail={environmentDetail}
-          scoreData={scoreData}
-          theme={theme}
-          lastClicked={lastClicked}
-          useCase={useCase}
-          h3GridData={h3GridData}
-          h3CellDetail={h3CellDetail}
-        />
+        <div className="map-area">
+          <MapComponent
+            activeLayers={activeLayers}
+            onMapClick={handleMapClick}
+            hotspotsData={hotspotsData}
+            catchmentData={catchmentData}
+            mapInfrastructure={mapInfrastructure}
+            demographicsDetail={demographicsDetail}
+            zoningDetail={zoningDetail}
+            poiDetail={poiDetail}
+            environmentDetail={environmentDetail}
+            scoreData={scoreData}
+            theme={theme}
+            lastClicked={lastClicked}
+            useCase={useCase}
+            h3GridData={h3GridData}
+            h3CellDetail={h3CellDetail}
+          />
+          <ScorePanel
+            scoreData={scoreData}
+            demographicsDetail={demographicsDetail}
+            isVisible={isPanelVisible}
+            onClose={() => setScoreData(null)}
+            onToggle={() => setIsPanelVisible(v => !v)}
+            onCompareAdd={handleCompareAdd}
+          />
+        </div>
       </main>
       <CompareModal isOpen={isCompareOpen} onClose={() => setIsCompareOpen(false)} savedSites={savedSites} />
     </>

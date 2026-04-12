@@ -5,6 +5,8 @@ from typing import Optional, Any
 class DemographicsRequest(BaseModel):
     lat: float
     lng: float
+    use_case: str = "retail"
+    weights: Optional[dict] = None
 
 
 class DemographicsBreakdown(BaseModel):
@@ -65,4 +67,7 @@ class DemographicsResponse(BaseModel):
     people_grouping: PeopleGrouping
     income_breakdown: IncomeBreakdown
     h3_cell: Optional[Any] = None
+    pop_score: float = 0.0
+    wealth_score: float = 0.0
+    income_score: float = 0.0
 

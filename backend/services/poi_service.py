@@ -175,12 +175,51 @@ def get_poi_score(lat: float, lng: float, radius: float, use_case: str, db: Sess
     complementary_df = df[df["dynamic_type"] == "complementary"]
 
     # ── Score calculation ───────────────────────────────────────
-    anchor_score = min(len(anchors_df) * scoring["anchor_weight"], scoring["anchor_cap"])
-    comp_score = min(len(complementary_df) * scoring["comp_weight"], scoring["comp_cap"])
-    penalty = min(len(competitors_df) * scoring["penalty_weight"], scoring["penalty_cap"])
+    def _competitor_score(count):
+        if count == 0: return 30
+        if 1 <= count <= 2: return 60
+        if 3 <= count <= 5: return 90
+        if 6 <= count <= 8: return 100
+        if 9 <= count <= 12: return 75
+        if 13 <= count <= 18: return 45
+        return 20
 
-    total_score = 50 + anchor_score + comp_score - penalty
-    total_score = max(10, min(100, total_score))
+    def _complementary_score(count):
+        return min(100, count * 12)
+
+    def _anchor_score(count):
+        if count == 0: return 0
+        if count == 1: return 55
+        if count == 2: return 80
+        if count == 3: return 95
+        return 100
+
+    USE_CASE_POI_WEIGHTS = {
+        "retail":      {"competitor": 0.35, "complementary": 0.35, "anchor": 0.30},
+        "ev_charging": {"competitor": 0.25, "complementary": 0.20, "anchor": 0.55},
+        "warehouse":   {"competitor": 0.05, "complementary": 0.10, "anchor": 0.85},
+        "telecom":     {"competitor": 0.05, "complementary": 0.10, "anchor": 0.85},
+        "energy":      {"competitor": 0.05, "complementary": 0.05, "anchor": 0.90},
+    }
+
+    anchor_count = len(anchors_df)
+    competitor_count = len(competitors_df)
+    complementary_count = len(complementary_df)
+
+    anchor_sc = _anchor_score(anchor_count)
+    comp_sc = _competitor_score(competitor_count)
+    compl_sc = _complementary_score(complementary_count)
+
+    weights = USE_CASE_POI_WEIGHTS.get(use_case, USE_CASE_POI_WEIGHTS["retail"])
+    
+    total_score = (
+        anchor_sc * weights["anchor"] +
+        comp_sc * weights["competitor"] +
+        compl_sc * weights["complementary"]
+    )
+
+    if use_case in ["retail", "ev_charging"] and anchor_count == 0 and competitor_count == 0:
+        total_score = min(total_score, 35.0)
 
     # ── GeoJSON features for the map ────────────────────────────
     POI_COLORS = {
@@ -219,19 +258,27 @@ def get_poi_score(lat: float, lng: float, radius: float, use_case: str, db: Sess
         ]
 
     return {
-        "score": total_score,
+        "poi_score": total_score,
+        "score": total_score, # Keep 'score' for backward compatibility
+        "competitor_score": comp_sc,
+        "complementary_score": compl_sc,
+        "anchor_score": anchor_sc,
+        "anchor_count": anchor_count,
+        "competitor_count": competitor_count,
+        "complementary_count": complementary_count,
+        "weights_used": weights,
         "label": cfg["label"],
         "use_case": use_case,
         "summary": (
-            f"Found {len(anchors_df)} anchors, "
-            f"{len(complementary_df)} complementary places, "
-            f"and {len(competitors_df)} direct competitors "
+            f"Found {anchor_count} anchors, "
+            f"{complementary_count} complementary places, "
+            f"and {competitor_count} direct competitors "
             f"for {cfg['label']}."
         ),
         "counts": {
-            "anchors": len(anchors_df),
-            "competitors": len(competitors_df),
-            "complementary": len(complementary_df),
+            "anchors": anchor_count,
+            "competitors": competitor_count,
+            "complementary": complementary_count,
         },
         "anchors": to_dict_list(anchors_df),
         "competitors": to_dict_list(competitors_df),

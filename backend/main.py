@@ -8,6 +8,7 @@ from routers import transport
 from routers import zoning
 from routers import demographics, transport, isochrone, poi, environment
 from routers import h3 as h3_router
+from routers import score as score_router
 
 # from routers import demographics, poi, score  ← add as you build more layers
 
@@ -32,6 +33,7 @@ app.include_router(isochrone.router)   # GET /api/catchment-direct
 app.include_router(poi.router)         # POST /api/poi/score
 app.include_router(h3_router.router)   # GET /api/h3/grid, POST /api/h3/cell
 app.include_router(environment.router) # GET /api/environment/grid, POST /api/environment/score
+app.include_router(score_router.router)  # GET /api/score/presets
 # app.include_router(poi.router)
 
 @app.get("/health")

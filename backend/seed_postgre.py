@@ -93,34 +93,34 @@ if 'building' in unified_data.columns:
     print(f"✅ buildings table: {len(buildings_df)} rows")
 
 
-def _detect_population_column(df: gpd.GeoDataFrame) -> str:
-	preferred = [
-		"population",
-		"pop",
-		"population_count",
-		"population_sum",
-		"pop_total",
-		"total_population",
-	]
-	for col in preferred:
-		if col in df.columns:
-			return col
+# def _detect_population_column(df: gpd.GeoDataFrame) -> str:
+# 	preferred = [
+# 		"population",
+# 		"pop",
+# 		"population_count",
+# 		"population_sum",
+# 		"pop_total",
+# 		"total_population",
+# 	]
+# 	for col in preferred:
+# 		if col in df.columns:
+# 			return col
 
-	numeric_cols = [
-		col for col in df.columns
-		if col != "geometry" and pd.api.types.is_numeric_dtype(df[col])
-	]
-	if not numeric_cols:
-		raise ValueError("No numeric population column found in Kontur dataset")
+# 	numeric_cols = [
+# 		col for col in df.columns
+# 		if col != "geometry" and pd.api.types.is_numeric_dtype(df[col])
+# 	]
+# 	if not numeric_cols:
+# 		raise ValueError("No numeric population column found in Kontur dataset")
 
-	return numeric_cols[0]
+# 	return numeric_cols[0]
 
 
-population_col = _detect_population_column(population)
-population = population[[population_col, "geometry"]].rename(columns={population_col: "population"})
-population["population"] = pd.to_numeric(population["population"], errors="coerce").fillna(0)
-population = population[population.geometry.notnull() & ~population.geometry.is_empty]
-population.to_postgis("population_grid", engine, if_exists="replace", index=False)
+# population_col = _detect_population_column(population)
+# population = population[[population_col, "geometry"]].rename(columns={population_col: "population"})
+# population["population"] = pd.to_numeric(population["population"], errors="coerce").fillna(0)
+# population = population[population.geometry.notnull() & ~population.geometry.is_empty]
+# population.to_postgis("population_grid", engine, if_exists="replace", index=False)
 
 
 

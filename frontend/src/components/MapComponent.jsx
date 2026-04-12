@@ -155,21 +155,69 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           'layer_landuse',
           'layer_risk',
           'h3_cell_highlight_fill',
+          'h3_invisible_fill',
           'layer_poi',
-          'layer_dynamic_poi'
+          'layer_dynamic_poi',
+          'poi_detail_points'
         ]}
-        onMouseEnter={(e) => {
+        onMouseMove={(e) => {
           if (e.features && e.features.length > 0) {
-            const feature = e.features[0];
-            const lid = feature.layer.id;
-
-            if (lid === 'h3_cell_highlight_fill') {
+            // Find if mouse is over H3 cell highlight
+            const h3Feat = e.features.find(f => f.layer.id === 'h3_cell_highlight_fill' || f.layer.id === 'h3_invisible_fill');
+            if (h3Feat) {
               setDemoHover(true);
               setZoningHover(true);
+              setRiskHover(true);
+            } else {
+              // Mouse is inside map container but not over H3 cell
+              setDemoHover(false);
+              setZoningHover(false);
+              setRiskHover(false);
             }
+
+            // Find if mouse is over POI point
+            const poiFeat = e.features.find(f => f.layer.id === 'layer_poi' || f.layer.id === 'layer_dynamic_poi' || f.layer.id === 'poi_detail_points');
+            if (poiFeat) {
+              const props = poiFeat.properties;
+              setHoverInfo(prev => {
+                const newId = `poi-${props.name}`;
+                if (prev && prev.id === newId) return prev; // Avoid unnecessary re-renders
+                return {
+                  id: newId,
+                  type: props.poi_type || props.category || 'POI',
+                  name: props.name,
+                  dist: props.distance_m || 0,
+                  lng: poiFeat.geometry?.coordinates ? poiFeat.geometry.coordinates[0] : e.lngLat.lng,
+                  lat: poiFeat.geometry?.coordinates ? poiFeat.geometry.coordinates[1] : e.lngLat.lat,
+                  color: props.color || (props.poi_type === 'anchor' ? '#58a6ff' : props.poi_type === 'competitor' ? '#f85149' : props.poi_type === 'complementary' ? '#3fb950' : '#e3883e')
+                };
+              });
+            } else {
+              setHoverInfo(prev => {
+                if (prev && prev.id && prev.id.startsWith('poi-')) return null;
+                return prev;
+              });
+            }
+          } else {
+            // No interactive features hovered
+            setDemoHover(false);
+            setZoningHover(false);
+            setRiskHover(false);
+            setHoverInfo(prev => {
+              if (prev && prev.id && prev.id.startsWith('poi-')) return null;
+              return prev;
+            });
           }
         }}
-        onMouseLeave={() => { setDemoHover(false); setZoningHover(false); }}
+        onMouseLeave={() => {
+          setDemoHover(false);
+          setZoningHover(false);
+          setRiskHover(false);
+          // Only clear POI hover if we are actually leaving the point (and not hovering over bus/train)
+          if (hoverInfo && hoverInfo.id && hoverInfo.id.startsWith('poi-')) {
+            setHoverInfo(null);
+          }
+        }}
       >
         <NavigationControl position="bottom-right" />
 
@@ -214,7 +262,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         )}
 
         {/* ── H3 ACTIVE CELL HIGHLIGHT ── */}
-        {h3CellHighlightGeoJSON && (
+        {activeLayers.demographics && h3CellHighlightGeoJSON && (
           <Source id="h3_cell_highlight_src" type="geojson" data={h3CellHighlightGeoJSON}>
             <Layer
               id="h3_cell_highlight_fill"
@@ -231,6 +279,20 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 'line-color': '#79c0ff',
                 'line-width': 2.5,
                 'line-opacity': 0.9
+              }}
+            />
+          </Source>
+        )}
+
+        {/* INVISIBLE H3 CELL (Preserves hover interaction for Risk/Zoning when Demographics visuals are off) */}
+        {(!activeLayers.demographics && (activeLayers.risk || activeLayers.landuse)) && h3CellHighlightGeoJSON && (
+          <Source id="h3_invisible_src" type="geojson" data={h3CellHighlightGeoJSON}>
+            <Layer
+              id="h3_invisible_fill"
+              type="fill"
+              paint={{
+                'fill-color': 'transparent',
+                'fill-opacity': 0
               }}
             />
           </Source>
@@ -462,21 +524,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
-        {/* POI HIGHLIGHT CIRCLE (500m) AND POINTS */}
-        {poiCircleGeoJSON && (
-          <Source id="poi_circle_src" type="geojson" data={poiCircleGeoJSON}>
-            <Layer
-              id="poi_circle_fill"
-              type="fill"
-              paint={{ 'fill-color': '#e3883e', 'fill-opacity': 0.1 }}
-            />
-            <Layer
-              id="poi_circle_line"
-              type="line"
-              paint={{ 'line-color': '#e3883e', 'line-width': 1.5, 'line-dasharray': [2, 2] }}
-            />
-          </Source>
-        )}
+        {/* POI HIGHLIGHT CIRCLE (500m) AND POINTS - Circle intentionally removed as per request */}
 
         {activeLayers.poi && poiDetail && poiDetail.features && (
           <Source id="poi_detail_points_src" type="geojson" data={{ type: 'FeatureCollection', features: poiDetail.features }}>
@@ -532,7 +580,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         )}
 
         {/* INFRASTRUCTURE rendering for Transport layer details */}
-        {mapInfrastructure && mapInfrastructure.roads && (
+        {activeLayers.transportation && mapInfrastructure && mapInfrastructure.roads && (
           <Source id="infra_roads_src" type="geojson" data={{ type: "FeatureCollection", features: mapInfrastructure.roads.filter(r => r.geometry).map(r => ({ type: "Feature", geometry: r.geometry, properties: r })) }}>
             <Layer id="infra_roads_line" type="line" paint={{
               'line-color': [
@@ -559,7 +607,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Source>
         )}
 
-        {mapInfrastructure && mapInfrastructure.busStops && mapInfrastructure.busStops.length > 0 && mapInfrastructure.busStops.filter(s => s.geometry).map((stop, i) => (
+        {activeLayers.transportation && mapInfrastructure && mapInfrastructure.busStops && mapInfrastructure.busStops.length > 0 && mapInfrastructure.busStops.filter(s => s.geometry).map((stop, i) => (
           <Marker key={`bus-${i}`} longitude={stop.geometry.coordinates[0]} latitude={stop.geometry.coordinates[1]} anchor="center">
             <div
               onClick={(e) => {
@@ -588,7 +636,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
           </Marker>
         ))}
 
-        {mapInfrastructure && mapInfrastructure.stations && mapInfrastructure.stations.length > 0 && mapInfrastructure.stations.filter(s => s.geometry).map((station, i) => (
+        {activeLayers.transportation && mapInfrastructure && mapInfrastructure.stations && mapInfrastructure.stations.length > 0 && mapInfrastructure.stations.filter(s => s.geometry).map((station, i) => (
           <Marker key={`train-${i}`} longitude={station.geometry.coordinates[0]} latitude={station.geometry.coordinates[1]} anchor="center">
             <div
               onClick={(e) => {

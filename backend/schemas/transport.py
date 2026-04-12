@@ -5,6 +5,7 @@ from typing import Optional, Any
 class LocationRequest(BaseModel):
     lat: float
     lng: float
+    use_case: str = "retail"
 
 # Sub-score breakdown
 class ScoreBreakdown(BaseModel):
@@ -41,6 +42,7 @@ class TransportResponse(BaseModel):
     station_distance_m:   int
     total_road_length_m:  float
     breakdown:            ScoreBreakdown
+    weights_used:         dict[str, float] = {}
     roads_nearby:         list[RoadDetails]
     bus_stops_nearby:     list[BusStopDetails]
     stations_nearby:      list[StationDetails]
