@@ -35,7 +35,6 @@ def get_h3_cell_for_point(lat: float, lng: float, db: Session) -> dict | None:
             senior_46_60,
             senior_citizen_60plus,
             est_per_capita_inr,
-            flood_score,
             ST_AsGeoJSON(geometry) AS geojson
         FROM h3_grid
         WHERE ST_Contains(
@@ -81,7 +80,6 @@ def get_h3_cell_for_point(lat: float, lng: float, db: Session) -> dict | None:
             "senior_citizen_60plus": _pct(row["senior_citizen_60plus"]),
         },
         "est_per_capita_inr":    float(row["est_per_capita_inr"] or 0),
-        "flood_score":           float(row["flood_score"] or 0),
         "geometry":              json.loads(row["geojson"]) if row["geojson"] else None,
     }
 
@@ -103,7 +101,6 @@ def get_all_h3_grid(db: Session) -> dict:
             senior_46_60,
             senior_citizen_60plus,
             est_per_capita_inr,
-            flood_score,
             ST_AsGeoJSON(geometry) AS geojson
         FROM h3_grid
         ORDER BY h3_index;
@@ -131,7 +128,6 @@ def get_all_h3_grid(db: Session) -> dict:
                 "senior_46_60":          int(row["senior_46_60"] or 0),
                 "senior_citizen_60plus": int(row["senior_citizen_60plus"] or 0),
                 "est_per_capita_inr":    float(row["est_per_capita_inr"] or 0),
-                "flood_score":           float(row["flood_score"] or 0),
             },
         })
 

@@ -2,6 +2,8 @@ import geopandas as gpd
 import pandas as pd
 from sqlalchemy import create_engine
 import os
+import numpy as np
+from shapely.geometry import Point
 from database import DATABASE_URL
 
 engine = create_engine(DATABASE_URL)
@@ -114,37 +116,102 @@ def _detect_population_column(df: gpd.GeoDataFrame) -> str:
 	return numeric_cols[0]
 
 
-# Import Kontur population polygons
-# print("Importing Kontur population boundaries...")
-# population_path = os.path.join(DATASET_DIR, "kontur_population_IN_20231101.gpkg")
-# population = gpd.read_file(population_path)
+population_col = _detect_population_column(population)
+population = population[[population_col, "geometry"]].rename(columns={population_col: "population"})
+population["population"] = pd.to_numeric(population["population"], errors="coerce").fillna(0)
+population = population[population.geometry.notnull() & ~population.geometry.is_empty]
+population.to_postgis("population_grid", engine, if_exists="replace", index=False)
 
-# if population.crs is None:
-# 	population = population.set_crs(epsg=4326)
-# else:
-# 	population = population.to_crs(epsg=4326)
 
-# population_col = _detect_population_column(population)
-# population = population[[population_col, "geometry"]].rename(columns={population_col: "population"})
-# population["population"] = pd.to_numeric(population["population"], errors="coerce").fillna(0)
-# population = population[population.geometry.notnull() & ~population.geometry.is_empty]
-# population.to_postgis("population_grid", engine, if_exists="replace", index=False)
-# print(f"✅ population_grid table: {len(population)} rows")
+
+# ── POI LOCATIONS ────────────────────────────────────────────────
+anchors_path = os.path.join(DATASET_DIR, "anchors.geojson")
+if os.path.exists(anchors_path):
+	anchors_gdf = gpd.read_file(anchors_path)
+	anchors_gdf = anchors_gdf[["name", "category", "poi_type", "geometry"]].copy()
+	anchors_gdf = anchors_gdf.set_crs(4326, allow_override=True)
+
+	print(f"📍 Anchors loaded: {len(anchors_gdf)} rows")
+
+	# Ahmedabad bounding box
+	LAT_MIN, LAT_MAX = 22.87, 23.13
+	LNG_MIN, LNG_MAX = 72.45, 72.65
+
+	def random_points_in_ahmedabad(n):
+		"""Generate n random Point geometries within the Ahmedabad bbox."""
+		lats = np.random.uniform(LAT_MIN, LAT_MAX, n)
+		lngs = np.random.uniform(LNG_MIN, LNG_MAX, n)
+		return [Point(lng, lat) for lng, lat in zip(lngs, lats)]
+
+	competitor_categories = [
+		"retail_store", "restaurant", "pharmacy", "gym",
+		"salon", "electronics_shop", "clothing_store", "cafe",
+	]
+
+	np.random.seed(42)
+	N_COMPETITORS = 800
+
+	competitor_rows = []
+	for _ in range(N_COMPETITORS):
+		competitor_rows.append({
+			"name":     f"Business_{np.random.randint(1000, 9999)}",
+			"category": np.random.choice(competitor_categories),
+			"poi_type": "competitor",
+			"geometry": random_points_in_ahmedabad(1)[0],
+		})
+
+	competitors_gdf = gpd.GeoDataFrame(competitor_rows, crs=4326)
+	print(f"🏪 Competitors generated: {len(competitors_gdf)} rows")
+
+	complementary_categories = [
+		"office_building", "hotel", "cinema", "park",
+		"bus_terminal", "market", "food_court", "parking_lot",
+	]
+
+	N_COMPLEMENTARY = 600
+
+	complementary_rows = []
+	for _ in range(N_COMPLEMENTARY):
+		complementary_rows.append({
+			"name":     f"Place_{np.random.randint(1000, 9999)}",
+			"category": np.random.choice(complementary_categories),
+			"poi_type": "complementary",
+			"geometry": random_points_in_ahmedabad(1)[0],
+		})
+
+	complementary_gdf = gpd.GeoDataFrame(complementary_rows, crs=4326)
+	print(f"🏢 Complementary generated: {len(complementary_gdf)} rows")
+
+	all_poi = pd.concat([
+		anchors_gdf,          # real OSM data
+		competitors_gdf,      # synthetic
+		complementary_gdf,    # synthetic
+	], ignore_index=True)
+
+	all_poi_gdf = gpd.GeoDataFrame(all_poi, crs=4326)
+	all_poi_gdf.to_postgis("poi_locations", engine, if_exists="replace", index=False)
+
+	print(f"\n✅ poi_locations table: {len(all_poi_gdf)} rows")
+else:
+	print("\n⚠️ anchors.geojson not found. Skipping POI seeding.")
+
 
 
 # ── H3 HEXAGONAL GRID ──────────────────────────────────────────
 # Reads the 443 unique H3 cells from ahmedabad_h3_with_demography.csv,
 # converts each H3 index to its hexagonal boundary polygon using the h3
 # library, and seeds the h3_grid PostGIS table.
+
+
 import h3
 from shapely.geometry import Polygon
 
 h3_csv_path = os.path.join(DATASET_DIR, "ahmedabad_h3_with_demography.csv")
 h3_df = pd.read_csv(h3_csv_path)
 
-flood_csv_path = os.path.join(DATASET_DIR, "FLood_score.csv")
+flood_csv_path = os.path.join(DATASET_DIR, "flood_score.geojson")
 if os.path.exists(flood_csv_path):
-    flood_df = pd.read_csv(flood_csv_path)
+    flood_df = gpd.read_file(flood_csv_path)
     # Merge on the 'h3' column
     h3_df = h3_df.merge(flood_df[['h3', 'flood_score']], on='h3', how='left')
     h3_df['flood_score'] = pd.to_numeric(h3_df['flood_score'], errors='coerce').fillna(0)

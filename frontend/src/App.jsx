@@ -27,6 +27,8 @@ function App() {
   const [mapInfrastructure, setMapInfrastructure] = useState(null);
   const [demographicsDetail, setDemographicsDetail] = useState(null);
   const [zoningDetail, setZoningDetail] = useState(null);
+  const [poiDetail, setPoiDetail] = useState(null);
+  const [environmentDetail, setEnvironmentDetail] = useState(null);
 
   // ── H3 Grid State ──────────────────────────────────────────
   const [h3GridData, setH3GridData] = useState(null);
@@ -43,15 +45,15 @@ function App() {
     document.documentElement.className = theme;
   }, [theme]);
 
-  // Fetch H3 grid data when the h3grid or risk layer is toggled on
+  // Fetch H3 grid data when the h3grid is toggled on
   useEffect(() => {
-    if ((activeLayers.h3grid || activeLayers.risk) && !h3GridData) {
+    if (activeLayers.h3grid && !h3GridData) {
       fetch('http://localhost:8000/api/h3/grid')
         .then(r => r.json())
         .then(data => setH3GridData(data))
         .catch(e => console.error('H3 Grid fetch error', e));
     }
-  }, [activeLayers.h3grid, activeLayers.risk]);
+  }, [activeLayers.h3grid]);
 
   const isInitialMount = React.useRef(true);
   useEffect(() => {
@@ -61,6 +63,16 @@ function App() {
       handleMapClick(lastClicked);
     }
   }, [activeLayers]);
+
+  // Re-fetch POI data when the use case changes
+  const isFirstUseCase = React.useRef(true);
+  useEffect(() => {
+    if (isFirstUseCase.current) {
+      isFirstUseCase.current = false;
+    } else if (lastClicked && activeLayers.poi) {
+      handleMapClick(lastClicked);
+    }
+  }, [useCase]);
 
   const handleUseCaseChange = (uc) => {
     setUseCase(uc);
@@ -94,6 +106,8 @@ function App() {
     setDemographicsDetail(null);
     setZoningDetail(null);
     setMapInfrastructure(null);
+    setPoiDetail(null);
+    setEnvironmentDetail(null);
     setH3CellDetail(null);
 
     let newScoreData = {
@@ -204,6 +218,39 @@ function App() {
             newScoreData.breakdown.landuse = data.zoning_score;
           })
           .catch(e => console.error('Zoning Scoring error', e))
+      );
+    }
+
+    // POI / Competition Layer
+    if (activeLayers.poi) {
+      fetchPromises.push(
+        fetch('http://localhost:8000/api/poi/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, radius: 500, use_case: useCase })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setPoiDetail(data);
+            newScoreData.breakdown.competition = data.score;
+          })
+          .catch(e => console.error('POI Scoring error', e))
+      );
+    }
+
+    // Environmental Risk Layer (AQI + Flood)
+    if (activeLayers.risk) {
+      fetchPromises.push(
+        fetch('http://localhost:8000/api/environment/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setEnvironmentDetail(data);
+          })
+          .catch(e => console.error('Environment Scoring error', e))
       );
     }
 
@@ -318,14 +365,16 @@ function App() {
           mapInfrastructure={mapInfrastructure}
           demographicsDetail={demographicsDetail}
           zoningDetail={zoningDetail}
+          poiDetail={poiDetail}
+          environmentDetail={environmentDetail}
           scoreData={scoreData}
           theme={theme}
           lastClicked={lastClicked}
+          useCase={useCase}
           h3GridData={h3GridData}
           h3CellDetail={h3CellDetail}
         />
       </main>
-      <ScorePanel scoreData={scoreData} onClose={() => setScoreData(null)} onCompareAdd={handleCompareAdd} />
       <CompareModal isOpen={isCompareOpen} onClose={() => setIsCompareOpen(false)} savedSites={savedSites} />
     </>
   );

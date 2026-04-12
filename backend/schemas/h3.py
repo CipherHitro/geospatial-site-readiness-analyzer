@@ -32,7 +32,6 @@ class H3CellResponse(BaseModel):
     age_distribution: AgeDistribution
     age_distribution_pct: AgeDistributionPct
     est_per_capita_inr: float
-    flood_score: float
     geometry: Any = None
 
 

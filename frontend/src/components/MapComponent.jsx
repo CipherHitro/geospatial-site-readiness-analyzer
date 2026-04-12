@@ -20,7 +20,7 @@ const AGE_LABELS = {
   'senior_citizen_60plus': 'Elders (60+)',
 };
 
-export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, scoreData, theme, lastClicked, h3GridData, h3CellDetail }) {
+export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsData, catchmentData, mapInfrastructure, demographicsDetail, zoningDetail, poiDetail, environmentDetail, scoreData, theme, lastClicked, h3GridData, envGridData, h3CellDetail }) {
   const mapRef = useRef(null);
 
   const [viewState, setViewState] = useState({
@@ -50,7 +50,35 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
     };
   }, [lastClicked]);
 
-  // Calculate coordinates West of the clicked point for Demographics
+  // Helper to create 500m circle for POI
+  const poiCircleGeoJSON = React.useMemo(() => {
+    if (!lastClicked || !activeLayers.poi || !poiDetail) return null;
+    const points = 64;
+    const coords = [];
+    const radiusKm = 0.5; // 500 meters
+    const kmPerLat = 111.32;
+    const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
+
+    for (let i = 0; i < points; i++) {
+      const angle = (i * 360) / points;
+      const dx = radiusKm * Math.cos(angle * Math.PI / 180);
+      const dy = radiusKm * Math.sin(angle * Math.PI / 180);
+      coords.push([
+        lastClicked.lng + (dx / kmPerLng),
+        lastClicked.lat + (dy / kmPerLat)
+      ]);
+    }
+    coords.push(coords[0]);
+    return {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [coords] }
+      }]
+    };
+  }, [lastClicked, activeLayers.poi, poiDetail]);
+
+  // Calculate coordinates 1020m West of the clicked point for Demographics
   const demoPopupCoords = React.useMemo(() => {
     if (!lastClicked) return null;
     const kmPerLng = 40075 * Math.cos(lastClicked.lat * Math.PI / 180) / 360;
@@ -122,10 +150,19 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         mapLib={maplibregl}
         mapStyle={theme === 'light' ? "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"}
         ref={mapRef}
-        interactiveLayerIds={['layer_demographics', 'layer_landuse', 'layer_risk', 'h3_cell_highlight_fill']}
+        interactiveLayerIds={[
+          'layer_demographics',
+          'layer_landuse',
+          'layer_risk',
+          'h3_cell_highlight_fill',
+          'layer_poi',
+          'layer_dynamic_poi'
+        ]}
         onMouseEnter={(e) => {
           if (e.features && e.features.length > 0) {
-            const lid = e.features[0].layer.id;
+            const feature = e.features[0];
+            const lid = feature.layer.id;
+
             if (lid === 'h3_cell_highlight_fill') {
               setDemoHover(true);
               setZoningHover(true);
@@ -200,12 +237,12 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         )}
 
         {/* DEMOGRAPHICS POPUP — enhanced with H3 cell age distribution */}
-        {demographicsDetail && lastClicked && (demoHover || !scoreData) && (
+        {activeLayers.demographics && demographicsDetail && lastClicked && (demoHover || !scoreData) && (
           <Popup
             longitude={demoPopupCoords.lng}
             latitude={demoPopupCoords.lat}
-            anchor="right"
-            offset={10}
+            anchor="bottom-right"
+            offset={40}
             closeButton={false}
             className="demographic-popup-map"
           >
@@ -270,27 +307,41 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
             longitude={riskPopupCoords.lng}
             latitude={riskPopupCoords.lat}
             anchor="top"
-            offset={10}
+            offset={40}
             closeButton={false}
             className="zoning-popup-map"
           >
             <div className="demo-popup-content">
               <div className="zoning-popup-header">
                 <span>Environmental Risk</span>
-                <span className="zoning-badge zoning-badge--no">
-                  Flood Exposure
+                <span className={`zoning-badge ${environmentDetail.flood_score > 50 || (environmentDetail.aqi && environmentDetail.aqi > 150) ? 'zoning-badge--no' : 'zoning-badge--ok'}`}>
+                  {environmentDetail.flood_score > 50 ? 'High Risk' : 'Low Risk'}
                 </span>
               </div>
               <div className="demo-popup-body">
-                {h3CellDetail.flood_score !== undefined && (
+                {environmentDetail.flood_score !== undefined && (
                   <div className="demo-popup-row">
                     <span className="demo-popup-label">Flood Risk Score:</span>
-                    <span className="demo-popup-value">{Number(h3CellDetail.flood_score).toFixed(1)} / 100</span>
+                    <span className="demo-popup-value">{Number(environmentDetail.flood_score).toFixed(1)} / 100</span>
                   </div>
+                )}
+                {environmentDetail.aqi !== null && environmentDetail.aqi !== undefined && (
+                  <>
+                    <div className="demo-popup-row">
+                      <span className="demo-popup-label">Live AQI:</span>
+                      <span className="demo-popup-value">{environmentDetail.aqi} ({environmentDetail.aqi_level})</span>
+                    </div>
+                    {environmentDetail.dominant_pollutant && (
+                      <div className="demo-popup-row">
+                        <span className="demo-popup-label">Pollutant:</span>
+                        <span className="demo-popup-value" style={{ textTransform: 'uppercase' }}>{environmentDetail.dominant_pollutant}</span>
+                      </div>
+                    )}
+                  </>
                 )}
                 <div className="demo-popup-row">
                   <span className="demo-popup-label">H3 Cell:</span>
-                  <span className="demo-popup-value">{h3CellDetail.h3_index}</span>
+                  <span className="demo-popup-value">{environmentDetail.h3_index || "N/A"}</span>
                 </div>
               </div>
             </div>
@@ -298,12 +349,12 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
         )}
 
         {/* ZONING POPUP */}
-        {zoningDetail && lastClicked && (zoningHover || !scoreData) && (
+        {activeLayers.landuse && zoningDetail && lastClicked && (zoningHover || !scoreData) && (
           <Popup
             longitude={zoningPopupCoords.lng}
             latitude={zoningPopupCoords.lat}
-            anchor="left"
-            offset={10}
+            anchor="bottom-left"
+            offset={40}
             closeButton={false}
             className="zoning-popup-map"
           >
@@ -406,6 +457,44 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 ],
                 'line-width': 1.5,
                 'line-opacity': 0.8
+              }}
+            />
+          </Source>
+        )}
+
+        {/* POI HIGHLIGHT CIRCLE (500m) AND POINTS */}
+        {poiCircleGeoJSON && (
+          <Source id="poi_circle_src" type="geojson" data={poiCircleGeoJSON}>
+            <Layer
+              id="poi_circle_fill"
+              type="fill"
+              paint={{ 'fill-color': '#e3883e', 'fill-opacity': 0.1 }}
+            />
+            <Layer
+              id="poi_circle_line"
+              type="line"
+              paint={{ 'line-color': '#e3883e', 'line-width': 1.5, 'line-dasharray': [2, 2] }}
+            />
+          </Source>
+        )}
+
+        {activeLayers.poi && poiDetail && poiDetail.features && (
+          <Source id="poi_detail_points_src" type="geojson" data={{ type: 'FeatureCollection', features: poiDetail.features }}>
+            <Layer
+              id="poi_detail_points"
+              type="circle"
+              paint={{
+                'circle-color': [
+                  'match',
+                  ['get', 'poi_type'],
+                  'competitor', '#f85149',
+                  'anchor', '#58a6ff',
+                  'complementary', '#3fb950',
+                  '#e3883e'
+                ],
+                'circle-radius': 6,
+                'circle-stroke-width': 2,
+                'circle-stroke-color': '#ffffff'
               }}
             />
           </Source>
@@ -551,10 +640,12 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
               <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '6px', lineHeight: '1.3' }}>
                 {hoverInfo.name}
               </div>
-              <div style={{ fontSize: '12px', color: '#8b949e', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <i className="fa-solid fa-person-walking"></i>
-                <span>{Math.round(hoverInfo.dist)} m away</span>
-              </div>
+              {hoverInfo.dist > 0 && (
+                <div style={{ fontSize: '12px', color: '#8b949e', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <i className="fa-solid fa-person-walking"></i>
+                  <span>{Math.round(hoverInfo.dist)} m away</span>
+                </div>
+              )}
             </div>
           </Popup>
         )}
@@ -619,6 +710,18 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
                 '#e3883e'
               ],
               'circle-radius': 4
+            }} />
+          </Source>
+        )}
+
+        {/* DYNAMIC POI LAYER (Use-case specific) */}
+        {activeLayers.poi && poiDetail && poiDetail.features && (
+          <Source id="src_dynamic_poi" type="geojson" data={{ type: "FeatureCollection", features: poiDetail.features }}>
+            <Layer id="layer_dynamic_poi" type="circle" paint={{
+              'circle-color': ['get', 'color'],
+              'circle-radius': 5,
+              'circle-stroke-width': 1,
+              'circle-stroke-color': '#000000'
             }} />
           </Source>
         )}
