@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import Map, { NavigationControl, Source, Layer, Marker, Popup } from 'react-map-gl/maplibre';
+import Map, { NavigationControl, Source, Layer, Marker, Popup } from '@vis.gl/react-maplibre';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import SearchBox from './SearchBox';
@@ -140,6 +140,7 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
       if (activeLayers[key] && key !== 'h3grid') fetchLayer(key);
     });
   }, [activeLayers]);
+
 
   return (
     <div className="map-container">
@@ -769,7 +770,6 @@ export default function MapComponent({ activeLayers = {}, onMapClick, hotspotsDa
             }} />
           </Source>
         )}
-
       </Map>
     </div>
   );

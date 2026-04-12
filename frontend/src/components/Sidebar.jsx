@@ -166,6 +166,32 @@ export default function Sidebar({
           </div>
 
           <div className="form-group">
+            <label className="form-label">Selection Mode</label>
+            <div className="selection-mode">
+              <label>
+                <input
+                  type="radio"
+                  name="selectionMode"
+                  value="point"
+                  checked={catchMode === 'point'}
+                  onChange={() => setCatchMode('point')}
+                />
+                Point Selection
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="selectionMode"
+                  value="area"
+                  checked={catchMode === 'area'}
+                  onChange={() => setCatchMode('area')}
+                />
+                Area Selection
+              </label>
+            </div>
+          </div>
+
+          <div className="form-group">
             <label className="form-label">Time Bands (minutes)</label>
             <div className="checkbox-group">
               <label className="check-opt">

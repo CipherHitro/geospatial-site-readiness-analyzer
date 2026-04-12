@@ -97,7 +97,9 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
             <i className="fa-solid fa-location-pin" />
             <span>
               {scoreData
-                ? `${Number(scoreData.lat).toFixed(4)}, ${Number(scoreData.lng).toFixed(4)}`
+                ? (scoreData.selectionKind === 'area' && scoreData.hex_count
+                  ? `Area · ${scoreData.hex_count} H3 cells @ ${Number(scoreData.lat).toFixed(4)}, ${Number(scoreData.lng).toFixed(4)}`
+                  : `${Number(scoreData.lat).toFixed(4)}, ${Number(scoreData.lng).toFixed(4)}`)
                 : 'Site Analysis'}
             </span>
             {scoreData?.constraint_failures?.length > 0 && (
