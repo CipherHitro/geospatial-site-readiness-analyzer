@@ -4,6 +4,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker, declarative_base
+import asyncpg
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
@@ -22,3 +23,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
+async def get_db_connection():
+    """Provides an async connection using asyncpg for scripts."""
+    return await asyncpg.connect(DATABASE_URL)

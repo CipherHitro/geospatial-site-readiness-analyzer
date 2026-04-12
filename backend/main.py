@@ -10,6 +10,7 @@ from routers import demographics, transport, isochrone, poi, environment
 from routers import h3 as h3_router
 from routers import score as score_router
 from routers import site as site_router
+from routers import hotspots
 
 # from routers import demographics, poi, score  ← add as you build more layers
 
@@ -36,7 +37,8 @@ app.include_router(h3_router.router)   # GET /api/h3/grid, POST /api/h3/cell
 app.include_router(environment.router) # GET /api/environment/grid, POST /api/environment/score
 app.include_router(score_router.router)  # GET /api/score/presets
 app.include_router(site_router.router)
-# app.include_router(poi.router)
+app.include_router(hotspots.router)
+
 
 @app.get("/health")
 def health():

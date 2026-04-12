@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme, mapMode, onThemeToggle, onMapModeToggle, onSidebarToggle, onHotspotsRun, isSidebarOpen }) {
+export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme, mapMode, onThemeToggle, onMapModeToggle, onSidebarToggle, onHotspotsRun, onRunAI, isSidebarOpen }) {
   return (
     <header className={`floating-header-controls ${isSidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`} id="topnav">
       <div className="floating-presets" id="preset-bar">
