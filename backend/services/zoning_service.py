@@ -203,6 +203,7 @@ def get_zoning_score(lat: float, lng: float, db: Session, use_case: str = "retai
     return {
         "zoning_score":               round(float(final_score), 1),
         "zone_type":                  zone_type,
+        "allows_commercial":          zone_type in ["commercial", "mixed", "industrial", "unknown"],
         "building_count_500m":        building_count,
         "total_built_area_sqm":       round(total_built_area),
         "zone_distribution_500m_pct": zone_distribution_500m,

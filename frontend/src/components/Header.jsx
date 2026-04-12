@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme, mapMode, onThemeToggle, onMapModeToggle, onSidebarToggle, onHotspotsRun, onRunAI, isSidebarOpen }) {
+export default function Header({ onCompareOpen, useCase, onUseCaseChange, mapMode, onMapModeToggle, onSidebarToggle, onHotspotsRun, isSidebarOpen }) {
   return (
     <header className={`floating-header-controls ${isSidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'}`} id="topnav">
       <div className="floating-presets" id="preset-bar">
@@ -24,12 +24,6 @@ export default function Header({ onCompareOpen, useCase, onUseCaseChange, theme,
       <div className="floating-actions">
         <button className={`icon-btn ${mapMode === 'satellite' ? 'active' : ''}`} title="Toggle Satellite Map" onClick={onMapModeToggle}>
           <i className="fa-solid fa-earth-asia"></i>
-        </button>
-        <button className="icon-btn" title="Toggle Theme" onClick={onThemeToggle}>
-          <i className={`fa-solid ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
-        </button>
-        <button className="icon-btn" title="Run AI Readiness Analysis" onClick={onRunAI} style={{ color: '#a371f7' }}>
-          <i className="fa-solid fa-brain"></i>
         </button>
         <button className="icon-btn" title="Run Hotspot Analysis" onClick={onHotspotsRun}>
           <i className="fa-solid fa-fire"></i>

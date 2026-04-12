@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
 const layersConfig = [
-  { id: 'demographics', name: 'Demographics', sub: 'Population · Income · Age', color: '#58a6ff' },
-  { id: 'transportation', name: 'Transportation', sub: 'Roads · Highways', color: '#d29922' },
-  { id: 'poi', name: 'Points of Interest', sub: 'Competitors · Anchors · Amenities', color: '#e3883e' },
-  { id: 'landuse', name: 'Land Use & Zoning', sub: 'Commercial · Industrial · Residential', color: '#3fb950' },
-  { id: 'risk', name: 'Environmental Risk', sub: 'Flood · Industrial · Air Quality', color: '#f85149' },
-  { id: 'h3grid', name: 'H3 Grid Overlay', sub: 'Hexagonal cell boundaries · Ahmedabad', color: '#79c0ff' }
+  { id: 'demographics', name: 'Demographics', sub: 'Population · Income · Age', color: '#d9b15b' },
+  { id: 'transportation', name: 'Transportation', sub: 'Roads · Highways', color: '#c7895a' },
+  { id: 'poi', name: 'Points of Interest', sub: 'Competitors · Anchors · Amenities', color: '#8a6f4e' },
+  { id: 'landuse', name: 'Land Use & Zoning', sub: 'Commercial · Industrial · Residential', color: '#6f9a7a' },
+  { id: 'risk', name: 'Environmental Risk', sub: 'Flood · Industrial · Air Quality', color: '#c96a5f' },
+  { id: 'h3grid', name: 'H3 Grid Overlay', sub: 'Hexagonal cell boundaries · Ahmedabad', color: '#aab9b2' }
 ];
 
 export default function Sidebar({
@@ -92,20 +92,20 @@ export default function Sidebar({
 
           <div className="legend-box">
             <div className="legend-title">POI Categories</div>
-            <div className="legend-row"><span className="legend-dot" style={{ background: '#f85149' }}></span>Competitor</div>
-            <div className="legend-row"><span className="legend-dot" style={{ background: '#58a6ff' }}></span>Anchor Tenant</div>
-            <div className="legend-row"><span className="legend-dot" style={{ background: '#3fb950' }}></span>Complementary</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#c96a5f' }}></span>Competitor</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#d9b15b' }}></span>Anchor Tenant</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#6f9a7a' }}></span>Complementary</div>
           </div>
 
           <div className="legend-box" style={{ marginTop: '12px' }}>
             <div className="legend-title">Transport Infrastructure</div>
-            <div className="legend-row"><i className="fa-solid fa-bus" style={{ color: '#58a6ff', width: '16px', marginRight: '6px', textAlign: 'center' }}></i>Bus Stop</div>
-            <div className="legend-row"><i className="fa-solid fa-train" style={{ color: '#ab7df8', width: '16px', marginRight: '6px', textAlign: 'center' }}></i>Station</div>
-            <div className="legend-row"><span className="legend-dot" style={{ background: '#e63946', borderRadius: '2px', height: '4px' }}></span>Motorway / Trunk</div>
-            <div className="legend-row"><span className="legend-dot" style={{ background: '#f4a261', borderRadius: '2px', height: '4px' }}></span>Primary Road</div>
-            <div className="legend-row"><span className="legend-dot" style={{ background: '#e9c46a', borderRadius: '2px', height: '4px' }}></span>Secondary Road</div>
-            <div className="legend-row"><span className="legend-dot" style={{ background: '#2a9d8f', borderRadius: '2px', height: '4px' }}></span>Tertiary Road</div>
-            <div className="legend-row"><span className="legend-dot" style={{ background: '#8ab17d', borderRadius: '2px', height: '4px' }}></span>Residential Road</div>
+            <div className="legend-row"><i className="fa-solid fa-bus" style={{ color: '#d9b15b', width: '16px', marginRight: '6px', textAlign: 'center' }}></i>Bus Stop</div>
+            <div className="legend-row"><i className="fa-solid fa-train" style={{ color: '#c7895a', width: '16px', marginRight: '6px', textAlign: 'center' }}></i>Station</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#b96a5f', borderRadius: '2px', height: '4px' }}></span>Motorway / Trunk</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#c7895a', borderRadius: '2px', height: '4px' }}></span>Primary Road</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#d9b15b', borderRadius: '2px', height: '4px' }}></span>Secondary Road</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#6f9a7a', borderRadius: '2px', height: '4px' }}></span>Tertiary Road</div>
+            <div className="legend-row"><span className="legend-dot" style={{ background: '#aab9b2', borderRadius: '2px', height: '4px' }}></span>Residential Road</div>
           </div>
 
           <div className="h3-legend-box" style={{ display: activeLayers.h3grid ? 'block' : 'none' }}>
@@ -121,7 +121,7 @@ export default function Sidebar({
 
           <div className="h3-legend-box" style={{ display: activeLayers.risk ? 'block' : 'none', marginTop: '12px' }}>
             <div className="legend-title">Environmental Risk — Flood Exposure</div>
-            <div className="h3-legend-gradient" style={{ background: 'linear-gradient(to right, #3fb950, #d29922, #f85149, #8b0000)' }}></div>
+            <div className="h3-legend-gradient" style={{ background: 'linear-gradient(to right, #6f9a7a, #d9b15b, #c7895a, #c96a5f)' }}></div>
             <div className="h3-legend-labels">
               <span>Safe</span>
               <span>Medium</span>
@@ -193,15 +193,15 @@ export default function Sidebar({
             <div className="checkbox-group">
               <label className="check-opt">
                 <input type="checkbox" checked={catchBands.includes(10)} onChange={() => toggleBand(10)} />
-                <span className="check-badge" style={{ background: '#4ade80' }}>10 min</span>
+                <span className="check-badge" style={{ background: '#6f9a7a' }}>10 min</span>
               </label>
               <label className="check-opt">
                 <input type="checkbox" checked={catchBands.includes(20)} onChange={() => toggleBand(20)} />
-                <span className="check-badge" style={{ background: '#fbbf24' }}>20 min</span>
+                <span className="check-badge" style={{ background: '#d9b15b' }}>20 min</span>
               </label>
               <label className="check-opt">
                 <input type="checkbox" checked={catchBands.includes(30)} onChange={() => toggleBand(30)} />
-                <span className="check-badge" style={{ background: '#f87171' }}>30 min</span>
+                <span className="check-badge" style={{ background: '#c96a5f' }}>30 min</span>
               </label>
             </div>
           </div>
@@ -212,12 +212,12 @@ export default function Sidebar({
 
           {catchmentData && catchmentData.catchment && (
             <div className="catchment-result" style={{ marginTop: 16 }}>
-              <h4 className="catchment-title" style={{ fontSize: 13, color: '#c9d1d9', marginBottom: 8 }}>Population Catchment</h4>
+              <h4 className="catchment-title" style={{ fontSize: 13, color: '#f7f2e8', marginBottom: 8 }}>Population Catchment</h4>
               <div id="catchment-bands">
                 {Object.entries(catchmentData.catchment).map(([mins, pop]) => (
                   <div key={mins} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', background: 'var(--surface)', borderRadius: 6, marginBottom: 4 }}>
-                    <span style={{ color: '#8b949e', fontSize: 13 }}>{mins} Min</span>
-                    <span style={{ color: '#58a6ff', fontSize: 13, fontWeight: 600 }}>{Number(pop).toLocaleString()}</span>
+                    <span style={{ color: '#d7e0d8', fontSize: 13 }}>{mins} Min</span>
+                    <span style={{ color: '#d9b15b', fontSize: 13, fontWeight: 600 }}>{Number(pop).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -243,15 +243,15 @@ export default function Sidebar({
           {hotspotsData && hotspotsData.summary && (
             <div className="hotspot-stats" style={{ display: 'flex', gap: 8, marginTop: 16 }}>
               <div className="stat-card" style={{ flex: 1, padding: 12, background: 'var(--surface)', borderRadius: 8, textAlign: 'center' }}>
-                <span className="stat-num" style={{ display: 'block', fontSize: 20, fontWeight: 700, color: '#f85149' }}>{hotspotsData.summary.hot_spots}</span>
+                <span className="stat-num" style={{ display: 'block', fontSize: 20, fontWeight: 700, color: '#c96a5f' }}>{hotspotsData.summary.hot_spots}</span>
                 <span className="stat-lbl" style={{ fontSize: 11, color: 'var(--text-muted)' }}>Hot Spots</span>
               </div>
               <div className="stat-card" style={{ flex: 1, padding: 12, background: 'var(--surface)', borderRadius: 8, textAlign: 'center' }}>
-                <span className="stat-num" style={{ display: 'block', fontSize: 20, fontWeight: 700, color: '#58a6ff' }}>{hotspotsData.summary.cold_spots}</span>
+                <span className="stat-num" style={{ display: 'block', fontSize: 20, fontWeight: 700, color: '#d9b15b' }}>{hotspotsData.summary.cold_spots}</span>
                 <span className="stat-lbl" style={{ fontSize: 11, color: 'var(--text-muted)' }}>Cold Spots</span>
               </div>
               <div className="stat-card" style={{ flex: 1, padding: 12, background: 'var(--surface)', borderRadius: 8, textAlign: 'center' }}>
-                <span className="stat-num" style={{ display: 'block', fontSize: 20, fontWeight: 700, color: '#d29922' }}>{hotspotsData.summary.cluster_count}</span>
+                <span className="stat-num" style={{ display: 'block', fontSize: 20, fontWeight: 700, color: '#8a6f4e' }}>{hotspotsData.summary.cluster_count}</span>
                 <span className="stat-lbl" style={{ fontSize: 11, color: 'var(--text-muted)' }}>Clusters</span>
               </div>
             </div>

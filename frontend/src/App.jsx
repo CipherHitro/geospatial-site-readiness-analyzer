@@ -6,7 +6,6 @@ import ScorePanel from './components/ScorePanel';
 import CompareModal from './components/CompareModal';
 
 function App() {
-  const [theme, setTheme] = useState('dark');
   const [mapMode, setMapMode] = useState('standard');
   const [useCase, setUseCase] = useState('retail');
   const [presets, setPresets] = useState({});
@@ -42,10 +41,6 @@ function App() {
       .then(d => setPresets(d.presets))
       .catch(console.error);
   }, []);
-
-  useEffect(() => {
-    document.documentElement.className = theme;
-  }, [theme]);
 
   // Fetch H3 grid data when the h3grid is toggled on
   useEffect(() => {
@@ -405,9 +400,7 @@ function App() {
         onCompareOpen={() => setIsCompareOpen(true)}
         useCase={useCase}
         onUseCaseChange={handleUseCaseChange}
-        theme={theme}
         mapMode={mapMode}
-        onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         onMapModeToggle={() => setMapMode(prev => (prev === 'standard' ? 'satellite' : 'standard'))}
         onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onHotspotsRun={handleHotspotsRun}
@@ -444,7 +437,6 @@ function App() {
             poiDetail={poiDetail}
             environmentDetail={environmentDetail}
             scoreData={scoreData}
-            theme={theme}
             mapMode={mapMode}
             lastClicked={lastClicked}
             useCase={useCase}
