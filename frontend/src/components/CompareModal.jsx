@@ -12,7 +12,7 @@ export default function CompareModal({ isOpen, onClose, savedSites = [] }) {
       }
 
       // Hardcoded colors for rendering sites
-      const colors = ['#58a6ff', '#3fb950', '#d29922', '#f85149'];
+      const colors = ['#d9b15b', '#6f9a7a', '#c7895a', '#c96a5f'];
 
       const labels = ['Demographics', 'Transportation', 'Competition', 'Land Use', 'Risk'];
       
@@ -46,12 +46,12 @@ export default function CompareModal({ isOpen, onClose, savedSites = [] }) {
               r: {
                 angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
                 grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                pointLabels: { color: '#8b949e', font: { size: 11, family: 'Inter' } },
+                pointLabels: { color: '#d7e0d8', font: { size: 11, family: 'Inter' } },
                 ticks: { display: false, min: 0, max: 100 }
               }
             },
             plugins: {
-              legend: { labels: { color: '#c9d1d9', font: { family: 'Inter' } } }
+              legend: { labels: { color: '#f7f2e8', font: { family: 'Inter' } } }
             }
           }
         });
@@ -107,7 +107,7 @@ export default function CompareModal({ isOpen, onClose, savedSites = [] }) {
           </div>
           
           {savedSites.length === 0 && (
-            <div className="compare-empty" style={{textAlign: 'center', padding: '32px', color: '#8b949e'}}>
+            <div className="compare-empty" style={{textAlign: 'center', padding: '32px', color: '#d7e0d8'}}>
               <i className="fa-solid fa-map-pin fa-2x" style={{marginBottom: 12}}></i>
               <p>Click map points → tap <strong>Compare</strong> in the score panel to add sites.</p>
             </div>

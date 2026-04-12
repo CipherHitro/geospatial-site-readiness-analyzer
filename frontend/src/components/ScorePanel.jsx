@@ -1,28 +1,28 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const SCORE_METRICS = [
-  { key: 'demographics', label: 'Demographics', icon: 'fa-users', color: '#58a6ff' },
-  { key: 'competition', label: 'Competition', icon: 'fa-store', color: '#a371f7' },
-  { key: 'landuse', label: 'Land Use', icon: 'fa-map', color: '#3fb950' },
-  { key: 'bus_score', label: 'Bus Access', icon: 'fa-bus', color: '#d29922' },
-  { key: 'station_score', label: 'Rail Access', icon: 'fa-train', color: '#e3883e' },
-  { key: 'road_score', label: 'Road Quality', icon: 'fa-road', color: '#58a6ff' },
-  { key: 'risk', label: 'Flood Risk', icon: 'fa-water', color: '#f85149' },
+  { key: 'demographics', label: 'Demographics', icon: 'fa-users', color: '#d9b15b' },
+  { key: 'competition', label: 'Competition', icon: 'fa-store', color: '#8a6f4e' },
+  { key: 'landuse', label: 'Land Use', icon: 'fa-map', color: '#6f9a7a' },
+  { key: 'bus_score', label: 'Bus Access', icon: 'fa-bus', color: '#c7895a' },
+  { key: 'station_score', label: 'Rail Access', icon: 'fa-train', color: '#b96a5f' },
+  { key: 'road_score', label: 'Road Quality', icon: 'fa-road', color: '#004643' },
+  { key: 'risk', label: 'Flood Risk', icon: 'fa-water', color: '#c96a5f' },
 ];
 
 const INCOME_COLORS = {
-  upper_class: '#3fb950',
-  upper_middle_class: '#58a6ff',
-  middle_class: '#d29922',
-  lower_middle_class: '#e3883e',
-  lower_class: '#f85149',
+  upper_class: '#6f9a7a',
+  upper_middle_class: '#d9b15b',
+  middle_class: '#8a6f4e',
+  lower_middle_class: '#c7895a',
+  lower_class: '#c96a5f',
 };
 
 function ScoreRing({ score }) {
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (circumference * Math.min(score, 100)) / 100;
-  const color = score >= 70 ? '#3fb950' : score >= 40 ? '#d29922' : '#f85149';
+  const color = score >= 70 ? '#6f9a7a' : score >= 40 ? '#d9b15b' : '#c96a5f';
   const grade = score >= 80 ? 'A' : score >= 65 ? 'B' : score >= 50 ? 'C' : 'D';
 
   return (
@@ -68,10 +68,100 @@ function ProgressBar({ label, icon, value, color }) {
   );
 }
 
+function MetricTile({ label, value, color, icon, subtitle, percent = 0 }) {
+  const pct = Math.min(Math.max(percent, 0), 100);
+  return (
+    <div className="sp-kpi sp-kpi--visual" style={{ borderColor: `${color}55`, background: `${color}12` }}>
+      <div className="sp-kpi-head">
+        <span className="sp-kpi-icon" style={{ color }}><i className={`fa-solid ${icon}`} /></span>
+        <span className="sp-kpi-lbl">{label}</span>
+      </div>
+      <span className="sp-kpi-val" style={{ color }}>{value}</span>
+      {subtitle && <span className="sp-kpi-sub">{subtitle}</span>}
+      <div className="sp-kpi-track"><div className="sp-kpi-fill" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${color}66, ${color})` }} /></div>
+    </div>
+  );
+}
+
+function StackedBar({ items }) {
+  const filtered = items.filter(item => item.value > 0);
+  if (!filtered.length) return null;
+
+  return (
+    <div className="sp-stacked">
+      <div className="sp-stacked-bar">
+        {filtered.map(item => (
+          <div
+            key={item.label}
+            className="sp-stacked-segment"
+            style={{ width: `${item.value}%`, background: item.color }}
+            title={`${item.label}: ${item.value}%`}
+          />
+        ))}
+      </div>
+      <div className="sp-stacked-legend">
+        {filtered.map(item => (
+          <span key={item.label} className="sp-stacked-chip">
+            <span className="sp-stacked-dot" style={{ background: item.color }} />
+            {item.label} {item.value}%
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ScorePanel({ scoreData, demographicsDetail, isVisible = true, onClose, onToggle, onCompareAdd }) {
   const hasData = scoreData !== null && scoreData !== undefined;
   const isOpen = hasData && isVisible;
   const demo = scoreData?.demographics || demographicsDetail;
+  const [panelHeight, setPanelHeight] = useState(260);
+  const dragRef = useRef({ dragging: false, startY: 0, startHeight: 260 });
+
+  const clampHeight = (value) => {
+    const min = 200;
+    const max = Math.floor(window.innerHeight * 0.82);
+    return Math.max(min, Math.min(max, value));
+  };
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!dragRef.current.dragging) return;
+      const delta = dragRef.current.startY - e.clientY;
+      setPanelHeight(clampHeight(dragRef.current.startHeight + delta));
+    };
+
+    const onUp = () => {
+      if (!dragRef.current.dragging) return;
+      dragRef.current.dragging = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => setPanelHeight(prev => clampHeight(prev));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const handleDragStart = (e) => {
+    dragRef.current = {
+      dragging: true,
+      startY: e.clientY,
+      startHeight: panelHeight,
+    };
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+  };
 
   return (
     <>
@@ -81,15 +171,15 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
           className="sp-toggle-btn"
           onClick={onToggle}
           title={isOpen ? 'Hide panel' : 'Show analysis panel'}
-          style={{ bottom: isOpen ? 'var(--panel-h)' : 0 }}
+          style={{ bottom: isOpen ? `${panelHeight}px` : 0 }}
         >
           <i className={`fa-solid fa-chevron-${isOpen ? 'down' : 'up'}`} />
           <span>{isOpen ? 'Hide Panel' : 'Show Results'}</span>
         </button>
       )}
 
-      <div className={`score-panel ${isOpen ? 'open' : ''}`}>
-        <div className="score-panel__drag" />
+      <div className={`score-panel ${isOpen ? 'open' : ''}`} style={{ height: `${panelHeight}px` }}>
+        <div className="score-panel__drag" onMouseDown={handleDragStart} />
 
         {/* ── Header ── */}
         <div className="score-panel__header">
@@ -102,8 +192,8 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
             </span>
             {scoreData?.constraint_failures?.length > 0 && (
               <span style={{
-                marginLeft: 8, fontSize: 11, color: '#f85149',
-                background: 'rgba(248,81,73,0.1)', padding: '2px 8px',
+                marginLeft: 8, fontSize: 11, color: '#c96a5f',
+                background: 'rgba(201,106,95,0.12)', padding: '2px 8px',
                 borderRadius: 4, fontWeight: 600,
               }}>
                 <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: 4 }} />
@@ -114,9 +204,6 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
           <div className="score-panel__actions">
             <button className="pill-btn" onClick={() => onCompareAdd && onCompareAdd(scoreData)}>
               <i className="fa-solid fa-code-compare" /> Compare
-            </button>
-            <button className="icon-btn icon-btn--sm" onClick={onClose}>
-              <i className="fa-solid fa-xmark" />
             </button>
           </div>
         </div>
@@ -137,7 +224,7 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
               <div className="sp-bars-section">
                 <div className="sp-section-title">Score Breakdown</div>
                 <div className="sp-bars-list">
-                  <ProgressBar key="total_score" label="Total Score" icon="fa-chart-line" value={scoreData.score || 0} color="#58a6ff" />
+                  <ProgressBar key="total_score" label="Total Score" icon="fa-chart-line" value={scoreData.score || 0} color="#d9b15b" />
                   {SCORE_METRICS.map(({ key, label, icon, color }) => {
                     const val = scoreData.breakdown?.[key];
                     if (val === undefined || val === null) return null;
@@ -154,43 +241,60 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
               {demo ? (
                 <>
                   <div className="sp-section-title" style={{ marginBottom: 12 }}>
-                    <i className="fa-solid fa-users" style={{ marginRight: 6, color: '#58a6ff' }} />
+                    <i className="fa-solid fa-users" style={{ marginRight: 6, color: '#d9b15b' }} />
                     Market Demographics
                   </div>
 
                   {/* Score KPIs */}
-                  <div className="sp-kpi-grid">
-                    <div className="sp-kpi" style={{ borderColor: 'rgba(88,166,255,0.3)', background: 'rgba(88,166,255,0.05)' }}>
-                      <span className="sp-kpi-val" style={{ color: '#58a6ff' }}>
-                        {demo.demographics_score ?? '—'}
-                      </span>
-                      <span className="sp-kpi-lbl">Demo Score</span>
-                    </div>
-                    <div className="sp-kpi">
-                      <span className="sp-kpi-val">{demo.pop_score != null ? Math.round(demo.pop_score) : '—'}</span>
-                      <span className="sp-kpi-lbl">Pop Score</span>
-                    </div>
-                    <div className="sp-kpi">
-                      <span className="sp-kpi-val">{demo.wealth_score != null ? Math.round(demo.wealth_score) : '—'}</span>
-                      <span className="sp-kpi-lbl">Wealth Score</span>
-                    </div>
-                    <div className="sp-kpi">
-                      <span className="sp-kpi-val">{demo.income_score != null ? Math.round(demo.income_score) : '—'}</span>
-                      <span className="sp-kpi-lbl">Income Score</span>
-                    </div>
+                  <div className="sp-kpi-grid sp-kpi-grid--visual">
+                    <MetricTile
+                      label="Demo Score"
+                      value={demo.demographics_score ?? '—'}
+                      color="#d9b15b"
+                      icon="fa-users"
+                      subtitle="Overall demographics"
+                      percent={demo.demographics_score ?? 0}
+                    />
+                    <MetricTile
+                      label="Population"
+                      value={demo.population != null ? Number(demo.population).toLocaleString() : '—'}
+                      color="#6f9a7a"
+                      icon="fa-people-group"
+                      subtitle="1km catchment"
+                      percent={Math.min((demo.population || 0) / 35000 * 100, 100)}
+                    />
+                    <MetricTile
+                      label="Wealth"
+                      value={demo.wealth_score != null ? Math.round(demo.wealth_score) : '—'}
+                      color="#8a6f4e"
+                      icon="fa-coins"
+                      subtitle={`Index ${demo.relative_wealth_index != null ? Number(demo.relative_wealth_index).toFixed(3) : '—'}`}
+                      percent={demo.wealth_score ?? 0}
+                    />
+                    <MetricTile
+                      label="Income"
+                      value={demo.income_score != null ? Math.round(demo.income_score) : '—'}
+                      color="#c7895a"
+                      icon="fa-sack-dollar"
+                      subtitle="Income strength"
+                      percent={demo.income_score ?? 0}
+                    />
                   </div>
 
-                  {/* Raw stats */}
-                  <div className="sp-stat-rows">
-                    <div className="sp-stat-row">
-                      <span className="sp-stat-lbl"><i className="fa-solid fa-people-group" /> Population (1km)</span>
-                      <span className="sp-stat-val">{demo.population != null ? Number(demo.population).toLocaleString() : '—'}</span>
+                  <div className="sp-mini-stats">
+                    <div className="sp-mini-stat">
+                      <span className="sp-mini-stat__icon"><i className="fa-solid fa-coins" /></span>
+                      <div>
+                        <span className="sp-mini-stat__label">Wealth Index</span>
+                        <strong>{demo.relative_wealth_index != null ? Number(demo.relative_wealth_index).toFixed(3) : '—'}</strong>
+                      </div>
                     </div>
-                    <div className="sp-stat-row">
-                      <span className="sp-stat-lbl"><i className="fa-solid fa-coins" /> Wealth Index</span>
-                      <span className="sp-stat-val">
-                        {demo.relative_wealth_index != null ? Number(demo.relative_wealth_index).toFixed(3) : '—'}
-                      </span>
+                    <div className="sp-mini-stat">
+                      <span className="sp-mini-stat__icon"><i className="fa-solid fa-users" /></span>
+                      <div>
+                        <span className="sp-mini-stat__label">Population (1km)</span>
+                        <strong>{demo.population != null ? Number(demo.population).toLocaleString() : '—'}</strong>
+                      </div>
                     </div>
                   </div>
 
@@ -198,27 +302,13 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                   {demo.people_grouping && (
                     <div className="sp-income-dist">
                       <div className="sp-section-title" style={{ marginBottom: 8, marginTop: 4 }}>Income Distribution</div>
-                      {Object.entries(demo.people_grouping).map(([group, pct]) => (
-                        <div className="sp-income-row" key={group}>
-                          <span className="sp-income-lbl">
-                            <span
-                              className="sp-income-dot"
-                              style={{ background: INCOME_COLORS[group] || '#8b949e' }}
-                            />
-                            {group.replace(/_/g, ' ')}
-                          </span>
-                          <div className="sp-income-track">
-                            <div
-                              className="sp-income-fill"
-                              style={{
-                                width: `${pct}%`,
-                                background: INCOME_COLORS[group] || '#8b949e',
-                              }}
-                            />
-                          </div>
-                          <span className="sp-income-val">{pct}%</span>
-                        </div>
-                      ))}
+                      <StackedBar
+                        items={Object.entries(demo.people_grouping).map(([group, pct]) => ({
+                          label: group.replace(/_/g, ' '),
+                          value: pct,
+                          color: INCOME_COLORS[group] || '#aab9b2',
+                        }))}
+                      />
                     </div>
                   )}
 
@@ -226,13 +316,13 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                   {scoreData.poi && (
                     <div className="sp-poi-summary">
                       <div className="sp-section-title" style={{ marginTop: 12, marginBottom: 8 }}>
-                        <i className="fa-solid fa-map-location-dot" style={{ marginRight: 6, color: '#a371f7' }} />
+                        <i className="fa-solid fa-map-location-dot" style={{ marginRight: 6, color: '#8a6f4e' }} />
                         POI: {scoreData.poi.label}
                       </div>
 
                       <div className="sp-kpi-grid">
-                        <div className="sp-kpi" style={{ borderColor: 'rgba(163,113,247,0.3)', background: 'rgba(163,113,247,0.05)' }}>
-                          <span className="sp-kpi-val" style={{ color: '#a371f7' }}>
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(138,111,78,0.3)', background: 'rgba(138,111,78,0.08)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#8a6f4e' }}>
                             {scoreData.poi.poi_score ? Math.round(scoreData.poi.poi_score) : (Math.round(scoreData.poi.score) || '—')}
                           </span>
                           <span className="sp-kpi-lbl">POI Score</span>
@@ -250,9 +340,9 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                       <div className="sp-stat-rows">
                         <div className="sp-stat-row">
                           <span className="sp-stat-lbl" style={{ width: '120px' }}>
-                            <i className="fa-solid fa-anchor" style={{ width: 14, color: '#58a6ff' }} /> Anchors
+                            <i className="fa-solid fa-anchor" style={{ width: 14, color: '#d9b15b' }} /> Anchors
                           </span>
-                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#58a6ff' }}>
+                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#d9b15b' }}>
                             {scoreData.poi.anchor_count ?? scoreData.poi.counts?.anchors ?? 0}
                             {scoreData.poi.anchor_score != null && (
                               <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
@@ -263,9 +353,9 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                         </div>
                         <div className="sp-stat-row">
                           <span className="sp-stat-lbl" style={{ width: '120px' }}>
-                            <i className="fa-solid fa-thumbs-up" style={{ width: 14, color: '#3fb950' }} /> Complementary
+                            <i className="fa-solid fa-thumbs-up" style={{ width: 14, color: '#6f9a7a' }} /> Complementary
                           </span>
-                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#3fb950' }}>
+                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#6f9a7a' }}>
                             {scoreData.poi.complementary_count ?? scoreData.poi.counts?.complementary ?? 0}
                             {scoreData.poi.complementary_score != null && (
                               <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
@@ -276,9 +366,9 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                         </div>
                         <div className="sp-stat-row">
                           <span className="sp-stat-lbl" style={{ width: '120px' }}>
-                            <i className="fa-solid fa-store-slash" style={{ width: 14, color: '#f85149' }} /> Competitors
+                            <i className="fa-solid fa-store-slash" style={{ width: 14, color: '#c96a5f' }} /> Competitors
                           </span>
-                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#f85149' }}>
+                          <span className="sp-stat-val" style={{ textAlign: 'right', color: '#c96a5f' }}>
                             {scoreData.poi.competitor_count ?? scoreData.poi.counts?.competitors ?? 0}
                             {scoreData.poi.competitor_score != null && (
                               <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>
@@ -295,12 +385,12 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                   {scoreData.transport && (
                     <div className="sp-poi-summary" style={{ marginTop: 16 }}>
                       <div className="sp-section-title" style={{ marginBottom: 12 }}>
-                        <i className="fa-solid fa-car" style={{ marginRight: 6, color: '#e3883e' }} />
+                        <i className="fa-solid fa-car" style={{ marginRight: 6, color: '#c7895a' }} />
                         Transport & Accessibility
                       </div>
                       <div className="sp-kpi-grid">
-                        <div className="sp-kpi" style={{ borderColor: 'rgba(210,153,34,0.3)', background: 'rgba(210,153,34,0.05)' }}>
-                          <span className="sp-kpi-val" style={{ color: '#d29922' }}>
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(199,137,90,0.3)', background: 'rgba(199,137,90,0.08)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#c7895a' }}>
                             {scoreData.transport.transport_score ?? '—'}
                           </span>
                           <span className="sp-kpi-lbl">Transport Score</span>
@@ -354,12 +444,12 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                   {scoreData.zoning && (
                     <div className="sp-poi-summary" style={{ marginTop: 16 }}>
                       <div className="sp-section-title" style={{ marginBottom: 12 }}>
-                        <i className="fa-solid fa-city" style={{ marginRight: 6, color: '#f85149' }} />
+                        <i className="fa-solid fa-city" style={{ marginRight: 6, color: '#b96a5f' }} />
                         Land Use & Zoning
                       </div>
                       <div className="sp-kpi-grid">
-                        <div className="sp-kpi" style={{ borderColor: 'rgba(248,81,73,0.3)', background: 'rgba(248,81,73,0.05)' }}>
-                          <span className="sp-kpi-val" style={{ color: '#f85149' }}>
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(185,106,95,0.3)', background: 'rgba(185,106,95,0.08)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#b96a5f' }}>
                             {scoreData.zoning.zoning_score ?? '—'}
                           </span>
                           <span className="sp-kpi-lbl">Zoning Score</span>
@@ -417,12 +507,12 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
                   {scoreData.environment && (
                     <div className="sp-poi-summary" style={{ marginTop: 16 }}>
                       <div className="sp-section-title" style={{ marginBottom: 12 }}>
-                        <i className="fa-solid fa-leaf" style={{ marginRight: 6, color: '#3fb950' }} />
+                        <i className="fa-solid fa-leaf" style={{ marginRight: 6, color: '#6f9a7a' }} />
                         Environment & Safety
                       </div>
                       <div className="sp-kpi-grid">
-                        <div className="sp-kpi" style={{ borderColor: 'rgba(63,185,80,0.3)', background: 'rgba(63,185,80,0.05)' }}>
-                          <span className="sp-kpi-val" style={{ color: '#3fb950' }}>
+                        <div className="sp-kpi" style={{ borderColor: 'rgba(111,154,122,0.3)', background: 'rgba(111,154,122,0.08)' }}>
+                          <span className="sp-kpi-val" style={{ color: '#6f9a7a' }}>
                             {scoreData.environment.environment_score ?? '—'}
                           </span>
                           <span className="sp-kpi-lbl">Risk Score</span>
@@ -493,7 +583,7 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
             {scoreData.recommendations?.length > 0 && (
               <div className="sp-recs">
                 <div className="sp-section-title" style={{ marginBottom: 10 }}>
-                  <i className="fa-solid fa-lightbulb" style={{ color: '#d29922', marginRight: 6 }} />
+                  <i className="fa-solid fa-lightbulb" style={{ color: '#d9b15b', marginRight: 6 }} />
                   Insights
                 </div>
                 <ul className="sp-recs-list">
