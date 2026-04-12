@@ -65,12 +65,12 @@ function App() {
     }
   }, [activeLayers]);
 
-  // Re-fetch POI data when the use case changes
+  // Re-fetch all active layer data when the use case changes
   const isFirstUseCase = React.useRef(true);
   useEffect(() => {
     if (isFirstUseCase.current) {
       isFirstUseCase.current = false;
-    } else if (lastClicked && activeLayers.poi) {
+    } else if (lastClicked) {
       handleMapClick(lastClicked);
     }
   }, [useCase]);
