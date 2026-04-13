@@ -100,9 +100,9 @@ Assessment: {score_label} (Overall {round(composite_score, 1)}/100)
 Assessment: {score_label} (Overall {round(composite_score, 1)}/100)
 
 Task: Provide a structured analysis using EXACTLY these bullet points (no paragraphs):
-- ✅ [Selection Drivers]: List 2 specific data-driven reasons to select this site for {use_case}.
-- ⚠️ [Risk Factors]: List 1-2 critical data-driven concerns OR reasons for potential rejection.
-- 💡 [Action Plan]: One concrete, site-specific recommendation for the business owner.
+- ✅ **[Selection Drivers]**: List 2 specific data-driven reasons to select this site for {use_case}.
+- ⚠️ **[Risk Factors]**: List 1-2 critical data-driven concerns OR reasons for potential rejection.
+- 💡 **[Action Plan]**: One concrete, site-specific recommendation for the business owner.
 
 DO NOT be generic. Cite the numbers provided above. Keep each bullet point under 25 words.
 """

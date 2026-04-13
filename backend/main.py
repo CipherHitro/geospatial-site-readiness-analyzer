@@ -11,6 +11,7 @@ from routers import h3 as h3_router
 from routers import score as score_router
 from routers import site as site_router
 from routers import hotspots
+from routers import ai as ai_router
 
 # from routers import demographics, poi, score  ← add as you build more layers
 
@@ -39,6 +40,8 @@ app.include_router(score_router.router)  # GET /api/score/presets
 app.include_router(site_router.router)
 app.include_router(hotspots.router)
 
+app.include_router(ai_router.router)     # POST /api/ai/compare
+# app.include_router(poi.router)
 
 @app.get("/health")
 def health():

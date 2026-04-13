@@ -8,6 +8,35 @@ const layersConfig = [
   { id: 'risk', name: 'Environmental Risk', sub: 'Flood · Industrial · Air Quality', color: '#c96a5f' }
 ];
 
+const renderMarkdown = (text) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  return lines.map((line, i) => {
+    let content = line.trim();
+    if (!content) return <br key={i} />;
+
+    const isBullet = content.startsWith('-') || content.startsWith('*') || content.startsWith('•');
+    if (isBullet) content = content.replace(/^[-*•]\s?/, '');
+
+    const parts = content.split(/(\*\*.*?\*\*)/g);
+    const renderedLine = parts.map((part, j) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={j}>{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+
+    if (isBullet) {
+      return (
+        <li key={i} style={{ marginLeft: '1.2em', marginBottom: '6px', listStyleType: 'disc' }}>
+          {renderedLine}
+        </li>
+      );
+    }
+    return <p key={i} style={{ marginBottom: '8px' }}>{renderedLine}</p>;
+  });
+};
+
 export default function Sidebar({
   isOpen,
   onToggle,
@@ -28,11 +57,16 @@ export default function Sidebar({
   onCatchmentRun,
   onResetWeights,
   onRunAI,
-  hotspotsData,
-  catchmentData,
   scoreData,
   activeTab,
-  setActiveTab
+  setActiveTab,
+  onRescore,
+  hotspotsData,
+  catchmentData,
+  visitedHistory,
+  onDeleteHistory,
+  onCompareOpen,
+  onHistoryClick
 }) {
   const [travelMode, setTravelMode] = useState('drive');
   const [catchBands, setCatchBands] = useState([10, 20]);
@@ -72,6 +106,9 @@ export default function Sidebar({
         </button>
         <button className={`tab-btn ${activeTab === 'analysis' ? 'active' : ''}`} onClick={() => setActiveTab('analysis')}>
           <i className="fa-solid fa-chart-simple"></i><span>Analysis</span>
+        </button>
+        <button className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
+          <i className="fa-solid fa-clock-rotate-left"></i><span>History</span>
         </button>
       </div>
 
@@ -342,11 +379,79 @@ export default function Sidebar({
                   AI Site Recommendations
                 </span>
               </div>
-              <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.5', color: '#8b949e', fontStyle: 'italic' }}>
-                "{scoreData.ai_insight}"
-              </p>
+              <div style={{ margin: 0, fontSize: '13px', lineHeight: '1.6', color: '#d7e0d8' }}>
+                {renderMarkdown(scoreData.ai_insight)}
+              </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* HISTORY TAB */}
+      <div className={`tab-panel ${activeTab === 'history' ? 'active' : ''}`}>
+        <div className="panel-section">
+          <h3 className="section-title"><i className="fa-solid fa-clock-rotate-left"></i> Visited Sites History</h3>
+          <p className="section-desc">History of analyzed sites.</p>
+
+          <div className="history-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+            {(!visitedHistory || visitedHistory.length === 0) ? (
+              <div style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>
+                No sites visited yet.
+              </div>
+            ) : (
+              visitedHistory.map((site, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => onHistoryClick?.(site)}
+                  style={{
+                    background: 'var(--surface-3)',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    border: '1px solid transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#d9b15b';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'transparent';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ color: '#f7f2e8', fontWeight: 600, fontSize: '14px' }}>{site.name}</span>
+                    <span style={{ color: '#d9b15b', fontSize: '13px' }}>Score: {site.score} ({site.grade})</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteHistory(idx);
+                    }}
+                    style={{ background: 'transparent', border: 'none', color: '#c96a5f', cursor: 'pointer', padding: '6px' }}
+                    title="Delete History"
+                  >
+                    <i className="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          <button
+            className="action-btn"
+            style={{ marginTop: 16, width: '100%', background: visitedHistory?.length >= 2 ? '#d9b15b' : 'var(--surface-3)', color: visitedHistory?.length >= 2 ? '#1a1c1a' : 'var(--text-muted)', cursor: visitedHistory?.length >= 2 ? 'pointer' : 'not-allowed' }}
+            disabled={!visitedHistory || visitedHistory.length < 2}
+            onClick={() => {
+              if (onCompareOpen) onCompareOpen();
+            }}
+          >
+            <i className="fa-solid fa-layer-group"></i> Compare Sites
+          </button>
         </div>
       </div>
     </aside>

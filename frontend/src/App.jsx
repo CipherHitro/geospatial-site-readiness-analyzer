@@ -110,7 +110,7 @@ function App() {
   const [catchmentData, setCatchmentData] = useState(null);
   const hotspotAbortRef = React.useRef(null);
 
-  const [savedSites, setSavedSites] = useState([]);
+  const [visitedHistory, setVisitedHistory] = useState([]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
 
   const [mapInfrastructure, setMapInfrastructure] = useState(null);
@@ -132,7 +132,22 @@ function App() {
       .then(r => r.json())
       .then(d => setPresets(d.presets))
       .catch(console.error);
+
+    // Load visited history from localStorage if available
+    const saved = localStorage.getItem('visitedHistory');
+    if (saved) {
+      try {
+        setVisitedHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to load history', e);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    // Save to local storage whenever it changes
+    localStorage.setItem('visitedHistory', JSON.stringify(visitedHistory));
+  }, [visitedHistory]);
 
   // Fetch H3 grid data when the h3grid is toggled on
   useEffect(() => {
@@ -146,6 +161,7 @@ function App() {
 
   const handleUseCaseChange = (uc) => {
     setUseCase(uc);
+    localStorage.setItem('compareUseCase', uc);
     if (presets[uc]) {
       const w = presets[uc].weights;
       setWeights({
@@ -158,9 +174,40 @@ function App() {
     }
   };
 
+  const handleDeleteHistory = (index) => {
+    setVisitedHistory(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleCompareAdd = (data) => {
-    setSavedSites(prev => [...prev, { name: `Site ${prev.length + 1}`, ...data }]);
+    setVisitedHistory(prev => {
+      const isDuplicate = prev.some(site => 
+        Math.abs(site.lat - data.lat) < 0.0001 && Math.abs(site.lng - data.lng) < 0.0001
+      );
+      if (isDuplicate) return prev;
+
+      const d = new Date();
+      const timeStr = `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+      const name = `Site ${prev.length + 1} (${timeStr})`;
+      return [...prev, { ...data, name }];
+    });
     setIsCompareOpen(true);
+  };
+
+  const handleHistoryClick = (site) => {
+    setScoreData(site);
+    setLastClicked({ lat: site.lat, lng: site.lng });
+    setIsPanelVisible(true);
+
+    // Also restore individual detail sections if They exist in the history item
+    if (site.demographics) setDemographicsDetail(site.demographics);
+    if (site.transport) setMapInfrastructure({
+      roads: site.transport.roads_nearby || [],
+      busStops: site.transport.bus_stops_nearby || [],
+      stations: site.transport.stations_nearby || []
+    });
+    if (site.zoning) setZoningDetail(site.zoning);
+    if (site.poi) setPoiDetail(site.poi);
+    if (site.environment) setEnvironmentDetail(site.environment);
   };
 
   const toggleLayer = (layerId) => setActiveLayers(prev => ({ ...prev, [layerId]: !prev[layerId] }));
@@ -269,6 +316,7 @@ function App() {
             newScoreData.breakdown.bus_score = data.breakdown.bus_score;
             newScoreData.breakdown.station_score = data.breakdown.station_score;
             newScoreData.breakdown.road_score = data.breakdown.road_score;
+            newScoreData.breakdown.transportation = data.transport_score;
             newScoreData.recommendations.push(
               `Nearest bus stop: ${data.nearest_bus_stop} (${data.bus_stop_distance_m}m)`,
               `Nearest station: ${data.nearest_station} (${data.station_distance_m}m)`
@@ -529,8 +577,6 @@ function App() {
         score_label: data.score_label,
         hard_cap_applied: data.hard_cap_applied
       }));
-
-
     } catch (e) {
       console.error('Orchestrator error', e);
       alert("Failed to run AI Orchestrator API.");
@@ -662,26 +708,30 @@ function App() {
           onHotspotsCancel={handleCancelHotspots}
           isHotspotsRunning={isHotspotsRunning}
           onCatchmentRun={handleCatchmentRun}
-            onResetWeights={() => {
-              if (presets[useCase]) {
-                const w = presets[useCase].weights;
-                setWeights({
-                  demographics: Math.round(w.demographics * 100),
-                  transportation: Math.round(w.transportation * 100),
-                  competition: Math.round(w.competition * 100),
-                  landuse: Math.round(w.landuse * 100),
-                  risk: Math.round(w.risk * 100)
-                });
-              } else {
-                setWeights({ demographics: 25, transportation: 20, competition: 20, landuse: 20, risk: 15 });
-              }
-            }}
+          onResetWeights={() => {
+            if (presets[useCase]) {
+              const w = presets[useCase].weights;
+              setWeights({
+                demographics: Math.round(w.demographics * 100),
+                transportation: Math.round(w.transportation * 100),
+                competition: Math.round(w.competition * 100),
+                landuse: Math.round(w.landuse * 100),
+                risk: Math.round(w.risk * 100)
+              });
+            } else {
+              setWeights({ demographics: 25, transportation: 20, competition: 20, landuse: 20, risk: 15 });
+            }
+          }}
           onRunAI={handleRunOrchestrator}
           hotspotsData={hotspotsData}
           catchmentData={catchmentData}
           scoreData={scoreData}
           activeTab={sidebarTab}
           setActiveTab={setSidebarTab}
+          visitedHistory={visitedHistory}
+          onDeleteHistory={handleDeleteHistory}
+          onCompareOpen={() => setIsCompareOpen(true)}
+          onHistoryClick={handleHistoryClick}
         />
         <div className="map-area">
           <MapComponent
@@ -717,7 +767,7 @@ function App() {
           />
         </div>
       </main>
-      <CompareModal isOpen={isCompareOpen} onClose={() => setIsCompareOpen(false)} savedSites={savedSites} />
+      <CompareModal isOpen={isCompareOpen} onClose={() => setIsCompareOpen(false)} savedSites={visitedHistory} useCase={useCase} />
     </>
   );
 }

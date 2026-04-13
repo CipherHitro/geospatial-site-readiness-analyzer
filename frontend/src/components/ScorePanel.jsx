@@ -204,7 +204,10 @@ export default function ScorePanel({ scoreData, demographicsDetail, isVisible = 
             )}
           </div>
           <div className="score-panel__actions">
-            
+            <button className="action-btn action-btn--ghost" onClick={() => onCompareAdd(scoreData)} style={{ height: '32px', padding: '0 12px', fontSize: '13px' }}>
+              <i className="fa-solid fa-plus-circle" style={{ marginRight: 6 }}></i>
+              Add to Compare
+            </button>
           </div>
         </div>
 
