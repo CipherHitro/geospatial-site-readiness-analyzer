@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import MapComponent from './components/MapComponent';
 import ScorePanel from './components/ScorePanel';
 import CompareModal from './components/CompareModal';
+import { API_BASE_URL } from './config';
 
 /** First ring centroid (GeoJSON lng/lat). */
 function polygonCentroid(geometry) {
@@ -128,7 +129,7 @@ function App() {
   selectionRef.current = { selectionMode, areaSelection, lastClicked };
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/score/presets')
+    fetch(`${API_BASE_URL}/api/score/presets`)
       .then(r => r.json())
       .then(d => setPresets(d.presets))
       .catch(console.error);
@@ -152,7 +153,7 @@ function App() {
   // Fetch H3 grid data when the h3grid is toggled on
   useEffect(() => {
     if (activeLayers.h3grid && !h3GridData) {
-      fetch('http://localhost:8000/api/h3/grid')
+      fetch(`${API_BASE_URL}/api/h3/grid`)
         .then(r => r.json())
         .then(data => setH3GridData(data))
         .catch(e => console.error('H3 Grid fetch error', e));
@@ -251,7 +252,7 @@ function App() {
     if (options.presetH3CellDetail) {
       setH3CellDetail(options.presetH3CellDetail);
     } else {
-      const h3Promise = fetch('http://localhost:8000/api/h3/cell', {
+      const h3Promise = fetch(`${API_BASE_URL}/api/h3/cell`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng })
@@ -270,7 +271,7 @@ function App() {
 
     // Demographic Layer
     if (effectiveLayers.demographics) {
-      const demoPromise = fetch('http://localhost:8000/api/demographics/score', {
+      const demoPromise = fetch(`${API_BASE_URL}/api/demographics/score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
@@ -305,7 +306,7 @@ function App() {
     // Transportation Layer
     if (effectiveLayers.transportation) {
       fetchPromises.push(
-        fetch('http://localhost:8000/api/transport/score', {
+        fetch(`${API_BASE_URL}/api/transport/score`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
@@ -338,7 +339,7 @@ function App() {
     // Zoning / Land Use Layer
     if (effectiveLayers.landuse) {
       fetchPromises.push(
-        fetch('http://localhost:8000/api/zoning/score', {
+        fetch(`${API_BASE_URL}/api/zoning/score`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
@@ -357,7 +358,7 @@ function App() {
     // POI / Competition Layer
     if (effectiveLayers.poi) {
       fetchPromises.push(
-        fetch('http://localhost:8000/api/poi/score', {
+        fetch(`${API_BASE_URL}/api/poi/score`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, radius: 500, use_case: useCase })
@@ -376,7 +377,7 @@ function App() {
     // Environmental Risk Layer (AQI + Flood)
     if (effectiveLayers.risk) {
       fetchPromises.push(
-        fetch('http://localhost:8000/api/environment/score', {
+        fetch(`${API_BASE_URL}/api/environment/score`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lat: lngLat.lat, lng: lngLat.lng, use_case: useCase })
@@ -491,7 +492,7 @@ function App() {
   const handleDrawnPolygonGeometry = async (polygonGeometry) => {
     setAreaDrawingActive(false);
     try {
-      const res = await fetch('http://localhost:8000/api/environment/select-area', {
+      const res = await fetch(`${API_BASE_URL}/api/environment/select-area`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(polygonGeometry)
@@ -556,7 +557,7 @@ function App() {
     };
 
     try {
-      const res = await fetch('http://localhost:8000/api/site/score', {
+      const res = await fetch(`${API_BASE_URL}/api/site/score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -589,7 +590,7 @@ function App() {
     hotspotAbortRef.current = controller;
     setIsHotspotsRunning(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/hotspots?use_case=${useCase}`, { signal: controller.signal });
+      const res = await fetch(`${API_BASE_URL}/api/hotspots?use_case=${useCase}`, { signal: controller.signal });
       const data = await res.json();
 
       // Ensure summary exists so the Sidebar renders the stats
@@ -638,7 +639,7 @@ function App() {
     try {
       const results = await Promise.all(
         sortedBands.map(async (mins) => {
-          const res = await fetch('http://localhost:8000/api/catchment-direct', {
+          const res = await fetch(`${API_BASE_URL}/api/catchment-direct`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { API_BASE_URL } from '../config';
 
 export default function CompareModal({ isOpen, onClose, savedSites = [], useCase = 'retail' }) {
   const [userNeed, setUserNeed] = useState('');
@@ -281,7 +282,7 @@ export default function CompareModal({ isOpen, onClose, savedSites = [], useCase
                   };
 
                   try {
-                    const res = await fetch('http://localhost:8000/api/ai/compare', {
+                    const res = await fetch(`${API_BASE_URL}/api/ai/compare`, {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(payload)
