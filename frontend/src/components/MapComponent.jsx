@@ -351,17 +351,9 @@ const MapComponent = React.forwardRef(function MapComponent(props, ref) {
           <span>Click the map to place corners (minimum 3). Then click <em>Complete polygon</em> in the sidebar.</span>
         </div>
       )}
-
+{/* 
       {hasActiveLayer && lastClicked && (demographicsDetail || zoningDetail || environmentDetail) && (
         <>
-          <button
-            type="button"
-            className="map-insight-toggle"
-            onClick={() => setDetailPanelOpen(prev => !prev)}
-          >
-            <i className={`fa-solid fa-chevron-${detailPanelOpen ? 'up' : 'down'}`}></i>
-            Detail Data
-          </button>
 
           {detailPanelOpen && (
             <aside className="map-insight-panel">
@@ -445,7 +437,7 @@ const MapComponent = React.forwardRef(function MapComponent(props, ref) {
             </aside>
           )}
         </>
-      )}
+      )} */}
 
       <Map
         {...viewState}

@@ -26,13 +26,15 @@ stations.to_postgis("stations", engine, if_exists='replace')
 print("✅ stations table seeded")
 
 # Roads — convert graphml to GeoDataFrame first
-import osmnx as ox
-print("Importing roads from graphml...")
-G = ox.load_graphml(os.path.join(DATASET_DIR, "ahmedabad_roads.graphml"))
-edges = ox.graph_to_gdfs(G, nodes=False)  # get only the road lines
-edges = edges[['highway', 'length', 'geometry']]
-edges.to_postgis("roads", engine, if_exists='replace')
-print("✅ roads table seeded")
+# Roads — load directly from pre-generated GeoJSON
+print("Importing roads from geojson...")
+
+roads = gpd.read_file(os.path.join(DATASET_DIR, "roads.geojson"))
+roads = roads[['highway', 'length', 'geometry']]
+
+roads.to_postgis("roads", engine, if_exists='replace', chunksize=1000)
+
+print("✅ roads table seeded")  
 
 # ── ZONES & BUILDINGS from Unified H3 Grid Dataset ────────────────
 print("Importing unified zoning/building data from full dataset...")

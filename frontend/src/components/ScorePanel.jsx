@@ -111,11 +111,20 @@ function StackedBar({ items }) {
   );
 }
 
+function getInitialPanelHeight() {
+  if (typeof window === 'undefined') return 260;
+
+  const isCompact = window.matchMedia('(max-width: 640px)').matches;
+  if (!isCompact) return 260;
+
+  return Math.max(240, Math.min(Math.round(window.innerHeight * 0.48), 360));
+}
+
 export default function ScorePanel({ scoreData, demographicsDetail, isVisible = true, onToggle, onCompareAdd }) {
   const hasData = scoreData !== null && scoreData !== undefined;
   const isOpen = hasData && isVisible;
   const demo = scoreData?.demographics || demographicsDetail;
-  const [panelHeight, setPanelHeight] = useState(260);
+  const [panelHeight, setPanelHeight] = useState(getInitialPanelHeight);
   const dragRef = useRef({ dragging: false, startY: 0, startHeight: 260 });
 
   const clampHeight = (value) => {

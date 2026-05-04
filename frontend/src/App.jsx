@@ -83,11 +83,16 @@ function aggregateSelectedCells(cells) {
   };
 }
 
+function shouldOpenSidebarByDefault() {
+  if (typeof window === 'undefined') return true;
+  return !window.matchMedia('(max-width: 900px)').matches;
+}
+
 function App() {
   const [mapMode, setMapMode] = useState('standard');
   const [useCase, setUseCase] = useState('retail');
   const [presets, setPresets] = useState({});
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(shouldOpenSidebarByDefault);
 
   const [activeLayers, setActiveLayers] = useState({ demographics: false, transportation: false, competition: false, landuse: false, risk: false });
   const [weights, setWeights] = useState({
@@ -143,6 +148,23 @@ function App() {
         console.error('Failed to load history', e);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 900px)');
+    const syncSidebar = (event) => {
+      setIsSidebarOpen(!event.matches);
+    };
+
+    syncSidebar(media);
+
+    if (media.addEventListener) {
+      media.addEventListener('change', syncSidebar);
+      return () => media.removeEventListener('change', syncSidebar);
+    }
+
+    media.addListener(syncSidebar);
+    return () => media.removeListener(syncSidebar);
   }, []);
 
   useEffect(() => {
